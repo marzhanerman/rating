@@ -3,6 +3,7 @@ import { Link, usePage } from "@inertiajs/react";
 import SystemTrendChart from "@/components/charts/SystemTrendChart";
 import KazakhstanMap from "@/components/background/KazakhstanMap";
 import { useState } from 'react';
+import MediaCoverage from "@/Components/MediaCoverage";
 
 type InstitutionalRating = {
   rank: number
@@ -92,36 +93,36 @@ export default function RankingHome() {
     'Педагогические вузы': 'bg-yellow-500',
     'Медицинские вузы': 'bg-emerald-500',
     'Вузы искусства и спорта': 'bg-emerald-500',
-};
-  
-const getCategoryColor = (category) =>
+  };
+
+  const getCategoryColor = (category) =>
     categoryColors[category] || 'bg-gray-500';
 
-const topByCategory = Object.values(
+  const topByCategory = Object.values(
     ratings.reduce((acc, item) => {
-        const category = item.institutional_category;
+      const category = item.institutional_category;
 
-        if (
-            !acc[category] ||
-            Number(item.total_score) > Number(acc[category].total_score)
-        ) {
-            acc[category] = item;
-        }
+      if (
+        !acc[category] ||
+        Number(item.total_score) > Number(acc[category].total_score)
+      ) {
+        acc[category] = item;
+      }
 
-        return acc;
+      return acc;
     }, {})
-);
+  );
 
 
-    const categories = [ ...new Set(ratings.map(r => r.institutional_category))];
-const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-    const filteredRatings =
+  const categories = [...new Set(ratings.map(r => r.institutional_category))];
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+  const filteredRatings =
     /*selectedCategory === "all"
         ? topByCategory
         : */
-        ratings.filter(
-              r => r.institutional_category === selectedCategory
-          );
+    ratings.filter(
+      r => r.institutional_category === selectedCategory
+    );
 
   return (
     <div className="bg-[#F5F7FB] text-[#0F172A] min-h-screen flex flex-col">
@@ -274,166 +275,178 @@ const [selectedCategory, setSelectedCategory] = useState(categories[0]);
         </div>
 
       </section>
-      <section className="py-24">
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-6 p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-2xl font-bold mb-4">Лидеры рейтинга 2026</h2>
-              <a class="text-[#1E40AF] font-medium hover:underline" href="/ranking">Полная таблица →</a>
-            </div>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-3xl font-semibold mb-4">Лидеры рейтинга 2026</h2>
+            <a class="text-[#1E40AF] font-medium hover:underline" href="/ranking">Полная таблица →</a>
+          </div>
 
-            {/* 🔘 ФИЛЬТР */}
-            <div className="flex gap-2 mb-6 flex-wrap">
-                {categories.map(category => (
-                    <button
-                        key={category}
-                        onClick={() => {
-    console.log("selected:", selectedCategory);
-console.log("ratings:", ratings);
-    setSelectedCategory(category);
-}}
-                        className={`px-4 py-2 rounded-full text-sm transition
-                            ${
-        selectedCategory === category
-            ? `${categoryColors[category] || 'bg-gray-500'} text-white`
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-    }`}
-                    >
-                        {category === "all" ? "Все" : category}
-                    </button>
-                ))}
-            </div>
+          {/* 🔘 ФИЛЬТР */}
+          <div className="flex gap-2 mb-6 flex-wrap">
+            {categories.map(category => (
+              <button
+                key={category}
+                onClick={() => {
+                  console.log("selected:", selectedCategory);
+                  console.log("ratings:", ratings);
+                  setSelectedCategory(category);
+                }}
+                className={`px-4 py-2 rounded-full text-sm transition
+                            ${selectedCategory === category
+                    ? `${categoryColors[category] || 'bg-gray-500'} text-white`
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+              >
+                {category === "all" ? "Все" : category}
+              </button>
+            ))}
+          </div>
 
-            {/* 🧩 КАРТОЧКИ */}
-            <div className="grid md:grid-cols-3 gap-6">
-                {filteredRatings.slice(0, 3).map(rating => (
-                    <div
-                        key={rating.id}
-                        className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
-                    >
-                        <div className="relative">
-                            <img
-                                src={`/storage/images/universities/${rating.university.id}.jpg`}
-                                className="w-full h-40 object-cover"
-                            />
+          {/* 🧩 КАРТОЧКИ */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {filteredRatings.slice(0, 3).map(rating => (
+              <div
+                key={rating.id}
+                className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
+              >
+                <div className="relative">
+                  <img
+                    src={`/storage/images/universities/${rating.university.id}.jpg`}
+                    className="w-full h-40 object-cover"
+                  />
 
-                            {/* 🏷 БЕЙДЖ */}
-                            <div className={`absolute top-3 left-3 text-white px-3 py-1 rounded-lg text-sm font-bold ${getCategoryColor(rating.institutional_category)}`}>
-                                #{rating.rank}
-                            </div>
-                        </div>
-
-                        {/*<div className="p-4 text-center">
-                            <div className="text-sm text-gray-500 uppercase">
-                                {rating.institutional_category}
-                            </div>
-
-                            <div className="mt-2 font-medium text-gray-800">
-                                {rating.university.current_name}
-                            </div>
-
-                            <div className="mt-2 text-xl font-bold text-blue-600">
-                                {Number(rating.total_score).toFixed(2)}
-                            </div>
-
-                            <div className="text-xs text-gray-400">
-                                итоговый балл
-                            </div>
-                        </div>*/}
-
-                        <div className="p-4">
-                <h3 className="font-semibold text-sm mb-3 min-h-[40px]">
-                  {rating.university.current_name}
-                </h3>
-
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <p className="text-blue-600 font-bold text-lg">{Number(rating.total_score).toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">Итоговый балл</p>
+                  {/* 🏷 БЕЙДЖ */}
+                  <div className={`absolute top-3 left-3 text-white px-3 py-1 rounded-lg text-sm font-bold ${getCategoryColor(rating.institutional_category)}`}>
+                    #{rating.rank}
                   </div>
-                  <div>
-                    <p className="text-orange-500 font-bold text-lg">71.71</p>
-                    <p className="text-xs text-gray-500">Показатель A</p>
-                  </div>
-                  <div>
-                    <p className="text-blue-500 font-bold text-lg">28.32</p>
-                    <p className="text-xs text-gray-500">Показатель B</p>
+                </div>
+
+                <div className="p-4">
+
+                  <h3 className="font-semibold text-sm mb-3 min-h-[40px]">
+                    {rating.university.current_name}
+                  </h3>
+
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <p className="text-blue-600 font-bold text-lg">{Number(rating.total_score).toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">Итоговый балл</p>
+                    </div>
+                    <div>
+                      <p className="text-orange-500 font-bold text-lg">71.71</p>
+                      <p className="text-xs text-gray-500">Показатель A</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-500 font-bold text-lg">28.32</p>
+                      <p className="text-xs text-gray-500">Показатель B</p>
+                    </div>
                   </div>
                 </div>
               </div>
-                    </div>
-                ))}
-            </div>
+            ))}
+          </div>
         </div>
         <div className="max-w-7xl mx-auto px-6">
 
-           
+        </div>
+      </section>
 
-          <div className="flex justify-between items-center mb-14">
-            <h2 className="text-3xl font-semibold">
-              Лидеры рейтинга 2026
-            </h2>
-
-            <Link
-              href="/ranking"
-              className="text-[#1E40AF] font-medium hover:underline"
-            >
-              Полная таблица →
-            </Link>
+      <section className="">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="">
+            <MediaCoverage />
           </div>
-          <div className="grid md:grid-cols-5 gap-6">            
+        </div>
+      </section>
 
-            {ratings.map((rating) => (
+      {/* Info Section */}
+      <section>
+        <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6">
 
-              <div
-                key={rating.id}
-                className="bg-white rounded-3xl shadow-md overflow-hidden hover:shadow-xl transition"
-              >
-             
-                <div className="relative">
-                    {/* Фото */}
-                    <img
-                        src={`/storage/images/universities/${rating.university.id}.jpg`}
-                        className="w-full h-40 object-cover"
-                    />
+          {/* Methodology */}
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="text-orange-500 font-semibold mb-4">
+              Методология рейтинга
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>• О методике</li>
+              <li>• Критерии и показатели</li>
+              <li>• Анкетные опросы</li>
+              <li>• Тип вуза</li>
+            </ul>
 
-                    <div className={`absolute top-2 left-2 text-white text-xs px-3 py-1 rounded-full ${getCategoryColor(rating.institutional_category)}`}>
-                        {rating.institutional_category}
-                    </div>
-                </div>
+            <button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm">
+              Подробнее
+            </button>
+          </div>
 
-                <div className="p-6 text-center">
+          {/* Certificate */}
+          <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-center">
+            <div className="w-full h-40 rounded-lg flex items-center justify-center text-gray-400">
+              <img
+                src={`/images/kratkaya.png`}
+                className="w-full object-cover"
+              />
+            </div>
+          </div>
 
-                  {/* категория 
-                  <div className="text-xs uppercase tracking-wide text-orange-500 font-semibold">
-                    {rating.institutional_category}
-                  </div>*/}
+          {/* Partners */}
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="text-blue-700 font-semibold mb-4">СМИ о рейтинге</h3>
 
-                  {/* название */}
-                  <div className="mt-2">
-                    <h3 className="font-semibold text-sm mb-3 min-h-[40px]">
-                      {rating.university.current_name}
-                    </h3>                    
-                  </div>
-
-                  {/* балл */}
-                  <div className="mt-4 text-xl font-semibold text-blue-600">
-                    {Number(rating.total_score).toFixed(2)}
-                  </div>
-
-                  <div className="text-sm text-slate-500">
-                    итоговый балл
-                  </div>
-
-                </div>
-
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center justify-center bg-slate-50 rounded-xl p-4 h-24">
+                <img
+                  src="/images/bilimdi_el.png"
+                  className="max-h-12 object-contain"
+                  alt="Bilim El"
+                />
               </div>
 
-            ))}
-
+              <div className="flex items-center justify-center rounded-xl p-4 h-24">
+                <img
+                  src="/images/kp.jpg"
+                  className="max-h-12 object-contain"
+                  alt="Казахстанская правда"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
       
+      {/* News */}
+      <section>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h3 className="text-blue-700 font-semibold mb-4">Новости</h3>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="bg-white rounded-2xl shadow p-5 hover:shadow-lg transition"
+              >
+                <p className="font-medium text-sm mb-2">
+                  Объявлены результаты нового рейтинга вузов
+                </p>
+                <p className="text-xs text-orange-500 mb-3">24.04.2024</p>
+
+                <button className="text-blue-600 text-sm hover:underline">
+                  Читать далее
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+
+
+
+
+
       {/* ================= METHODOLOGY ================= */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
@@ -465,24 +478,12 @@ console.log("ratings:", ratings);
         </div>
       </section>
 
+
+
       {/* ================= FOOTER ================= */}
-      <footer className="bg-[#0B2E6B] text-blue-200 py-14 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-8">
-
-          <div>
-            <div className="text-white font-semibold">
-              IQAA Ranking
-            </div>
-            <div className="text-sm mt-2">
-              Национальный рейтинг вузов Республики Казахстан
-            </div>
-          </div>
-
-          <div className="flex gap-8">
-            <Link href="/about">О рейтинге</Link>
-            <Link href="/methodology">Методология</Link>
-            <Link href="/contact">Контакты</Link>
-          </div>
+      <footer className="bg-[#0B2E6B] text-blue-200  ">
+        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm opacity-90">
+          © {new Date().getFullYear()} IQAA Ranking. Все права защищены.
         </div>
       </footer>
 
