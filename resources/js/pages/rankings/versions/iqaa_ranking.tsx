@@ -1,8 +1,6 @@
 import { Head, Link } from "@inertiajs/react";
-import { Award, Building2, ChevronRight, Filter, GraduationCap, Search, Trophy } from "lucide-react";
+import { Award, Building2, ChevronRight, Filter, GraduationCap, Trophy } from "lucide-react";
 import { useState } from "react";
-import MediaCoverage from "@/components/media/media-coverage";
-import UniversityProfileCard, { type UniversityProfile } from "@/components/universities/university-profile-card";
 
 type Rating = {
   id: number;
@@ -19,7 +17,6 @@ type Rating = {
 type Props = {
   ratingYear?: number | null;
   ratings?: Rating[];
-  universityProfiles?: UniversityProfile[];
 };
 
 const categoryStyles: Record<string, string> = {
@@ -39,41 +36,15 @@ const getUniversityImage = (universityId?: number) =>
 
 const formatScore = (value: number | string) => Number(value).toFixed(2);
 
-export default function IQAARanking({ ratingYear, ratings = [], universityProfiles = [] }: Props) {
+export default function IQAARanking({ ratingYear, ratings = [] }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const categories = ["all", ...new Set(ratings.map((rating) => rating.institutional_category).filter(Boolean))];
 
-  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
-
-  const filteredRatings = ratings.filter((rating) => {
-    const matchesCategory =
-      selectedCategory === "all" || rating.institutional_category === selectedCategory;
-    const universitySearchIndex = [
-      rating.university?.current_name ?? "",
-      rating.university?.city ?? "",
-    ]
-      .join(" ")
-      .toLocaleLowerCase();
-    const matchesSearch = !normalizedQuery || universitySearchIndex.includes(normalizedQuery);
-
-    return matchesCategory && matchesSearch;
-  });
-
-  const filteredProfileIds = new Set(
-    filteredRatings
-      .map((rating) => rating.university?.id)
-      .filter((universityId): universityId is number => Boolean(universityId)),
-  );
-
-  const filteredProfiles = universityProfiles
-    .filter((profile) => profile.id !== null && filteredProfileIds.has(profile.id))
-    .sort(
-      (left, right) =>
-        left.currentRank - right.currentRank ||
-        (left.currentName ?? "").localeCompare(right.currentName ?? "", "ru"),
-    );
+  const filteredRatings =
+    selectedCategory === "all"
+      ? ratings
+      : ratings.filter((rating) => rating.institutional_category === selectedCategory);
 
   const featuredRatings = filteredRatings.slice(0, 3);
   const ratingCount = filteredRatings.length;
@@ -155,13 +126,6 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                   >
                     На главную
                   </Link>
-
-                  <a
-                    href="#university-profiles"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    Карточки вузов
-                  </a>
                 </div>
               </div>
 
@@ -217,23 +181,6 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                     </button>
                   );
                 })}
-              </div>
-
-              <div className="mt-6">
-                <label htmlFor="university-search" className="mb-2 block text-sm font-medium text-slate-700">
-                  Поиск по названию
-                </label>
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <Search className="h-4 w-4 text-slate-400" />
-                  <input
-                    id="university-search"
-                    type="search"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Например, Satbayev University"
-                    className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                  />
-                </div>
               </div>
 
               <div className="mt-8 space-y-4 border-t border-slate-200 pt-6">
@@ -384,33 +331,6 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
             </div>
           </section>
 
-          <section id="university-profiles" className="mt-10 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <div className="flex flex-col gap-3 border-b border-slate-200 pb-6 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="text-sm font-medium uppercase tracking-[0.24em] text-blue-700">Профили вузов</div>
-                <h2 className="mt-2 text-3xl font-semibold text-slate-950">Карточки с историей и инфографикой</h2>
-              </div>
-
-              <p className="max-w-2xl text-sm leading-6 text-slate-500">
-                Карточки повторяют текущие фильтры страницы и показывают не только позицию в выбранном году, но и
-                динамику в институциональном рейтинге по годам. Поля сайта, ректора, адреса, года основания и
-                контингента подготовлены как слоты для будущего наполнения.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-6 xl:grid-cols-2">
-              {filteredProfiles.length > 0 ? (
-                filteredProfiles.map((profile) => (
-                  <UniversityProfileCard key={profile.id ?? profile.currentName} profile={profile} />
-                ))
-              ) : (
-                <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-slate-500 xl:col-span-2">
-                  Для выбранной категории и поискового запроса профили вузов не найдены.
-                </div>
-              )}
-            </div>
-          </section>
-
           <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <div className="text-sm font-medium uppercase tracking-[0.24em] text-blue-700">Методология</div>
@@ -450,10 +370,6 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
               </div>
             </div>
           </section>
-
-          <div className="mt-10">
-            <MediaCoverage />
-          </div>
         </main>
       </div>
     </>

@@ -3,7 +3,7 @@ import { Link, usePage } from "@inertiajs/react";
 import SystemTrendChart from "@/components/charts/SystemTrendChart";
 import KazakhstanMap from "@/components/background/KazakhstanMap";
 import { useState } from 'react';
-import MediaCoverage from "@/Components/media/media-coverage";
+import MediaCoverage from "@/Components/MediaCoverage";
 import Logo from "@/Components/header/logo/logo";
 
 type InstitutionalRating = {
