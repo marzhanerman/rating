@@ -45,11 +45,11 @@ export default function RankingHome() {
   const rest = universities.slice(3, 5)
 
   const navLinks = [
-    { name: "Рейтинг", href: "/ranking" },
-    { name: "Аналитика", href: "/analytics" },
-    { name: "Методология", href: "/methodology" },
+    { name: "О нас", href: "/ranking" },
+    { name: "Рейтинг вузов", href: "/analytics" },
+    { name: "Рейтинг ОП", href: "/methodology" },
     { name: "Новости", href: "/news" },
-    { name: "О рейтинге", href: "/about" },
+    { name: "Контакты", href: "/about" },
   ];
 
   const universities1 = [
@@ -155,15 +155,28 @@ export default function RankingHome() {
 
           {/* Right side */}
           <div className="flex items-center gap-4">
-            <button className="text-sm text-slate-500 hover:text-[#1E40AF]">
-              ENG
-            </button>
+            
+<div class="relative inline-block text-left group w-20">
+  
+  <button class="flex items-center justify-center gap-1 w-full text-sm text-slate-500 hover:text-[#1E40AF] py-1">
+    <span>РУС</span>
+    <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  
+  <div class="absolute left-0 hidden group-hover:block w-full bg-white border border-slate-100 rounded-md shadow-lg py-1 z-10 text-center">
+    <a href="#" class="block px-2 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#1E40AF]">ҚАЗ</a>
+    <a href="#" class="block px-2 py-2 text-xs text-[#1E40AF] bg-slate-50 font-bold border-y border-slate-50">РУС</a>
+    <a href="#" class="block px-2 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#1E40AF]">ENG</a>
+  </div>
+</div>
 
             <Link
               href="/ranking"
               className="px-5 py-2.5 rounded-xl bg-[#F97316] text-white text-sm font-medium hover:bg-orange-600 transition"
             >
-              Смотреть рейтинг
+              Войти
             </Link>
           </div>
         </div>

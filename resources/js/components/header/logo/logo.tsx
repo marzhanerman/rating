@@ -6,7 +6,7 @@ export default function Logo() {
       <img
         src="/images/logos/logo.svg"
         alt="IQAA"
-        className="h-16 w-auto object-contain"
+        className="h-12 w-auto object-contain"
       />
 
       <div className="leading-tight">
