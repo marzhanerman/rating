@@ -13,7 +13,6 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import RankingHeader from "@/components/header/navigation/ranking-header";
 
 type Questionnaire = {
   id: string;
@@ -227,7 +226,31 @@ export default function MethodologyPage() {
           <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
 
           <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-6">
-            <RankingHeader currentPath="/methodology" />
+            <header className="flex flex-col gap-6 rounded-[1.75rem] border border-slate-200/80 bg-white/95 px-5 py-4 shadow-xl shadow-slate-950/10 backdrop-blur md:flex-row md:items-center md:justify-between md:px-6">
+              <Link href="/" className="flex items-center gap-4">
+                <div className="rounded-2xl bg-white p-2 shadow-lg shadow-slate-950/10 ring-1 ring-slate-200">
+                  <img src="/images/logos/logo.svg" alt="IQAA" className="h-12 w-auto object-contain" />
+                </div>
+                <div className="max-w-md leading-tight">
+                  <div className="text-sm font-semibold uppercase tracking-[0.28em] text-blue-700">IQAA Ranking</div>
+                  <p className="mt-1 text-sm text-slate-700 md:text-base">
+                    Независимое агентство по обеспечению качества в образовании
+                  </p>
+                </div>
+              </Link>
+
+              <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                <Link href="/" className="transition hover:text-slate-950">
+                  Главная
+                </Link>
+                <span className="text-slate-300">/</span>
+                <Link href="/ranking" className="transition hover:text-slate-950">
+                  Рейтинг вузов
+                </Link>
+                <span className="text-slate-300">/</span>
+                <span className="font-medium text-slate-950">Методология</span>
+              </nav>
+            </header>
 
             <div className="grid gap-10 pt-10 lg:grid-cols-[minmax(0,1.1fr)_370px] lg:items-end">
               <div className="max-w-3xl">
