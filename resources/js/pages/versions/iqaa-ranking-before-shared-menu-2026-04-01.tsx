@@ -1,7 +1,6 @@
 import { Head, Link } from "@inertiajs/react";
 import { Award, Building2, ChevronRight, Filter, GraduationCap, Search, Trophy } from "lucide-react";
 import { useState } from "react";
-import RankingHeader from "@/components/header/navigation/ranking-header";
 import MediaCoverage from "@/components/media/media-coverage";
 import UniversityProfileCard, { type UniversityProfile } from "@/components/universities/university-profile-card";
 
@@ -105,7 +104,25 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
           <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
 
           <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-6">
-            <RankingHeader currentPath="/ranking" />
+            <header className="flex flex-col gap-6 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
+              <Link href="/" className="flex items-center gap-4">
+                <img src="/images/logos/logo.svg" alt="IQAA" className="h-16 w-auto object-contain" />
+                <div className="max-w-md leading-tight">
+                  <div className="text-sm font-semibold uppercase tracking-[0.28em] text-blue-200">IQAA Ranking</div>
+                  <p className="mt-1 text-sm text-white/90 md:text-base">
+                    Независимое агентство по обеспечению качества в образовании
+                  </p>
+                </div>
+              </Link>
+
+              <nav className="flex flex-wrap items-center gap-3 text-sm text-white/80">
+                <Link href="/" className="transition hover:text-white">
+                  Главная
+                </Link>
+                <span className="text-white/30">/</span>
+                <span className="font-medium text-white">Рейтинг вузов</span>
+              </nav>
+            </header>
 
             <div className="grid gap-10 pt-12 lg:grid-cols-[minmax(0,1.05fr)_360px] lg:items-end">
               <div className="max-w-3xl">
