@@ -161,7 +161,7 @@ export default function RankingHome() {
   <button class="flex items-center justify-center gap-1 w-full text-sm text-slate-500 hover:text-[#1E40AF] py-1">
     <span>РУС</span>
     <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
     </svg>
   </button>
   
@@ -278,7 +278,7 @@ export default function RankingHome() {
         </div>
 
       </section>
-      <section className="py-10">
+      <section className="bg-white py-10 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.05)]">
         <div className="max-w-7xl mx-auto px-6 p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-3xl font-semibold mb-4">Лидеры рейтинга 2026</h2>
@@ -355,20 +355,21 @@ export default function RankingHome() {
         </div>
       </section>
 
-      <section className="">
+      {/* <section className="">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="">
             <MediaCoverage />
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Info Section */}
-      <section>
+      
+      {/* <section>
         <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6">
 
           {/* Methodology */}
-          <div className="bg-white rounded-2xl shadow p-6">
+          {/* <div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-orange-500 font-semibold mb-4">
               Методология рейтинга
             </h3>
@@ -382,20 +383,20 @@ export default function RankingHome() {
             <button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm">
               Подробнее
             </button>
-          </div>
+          </div> */}
 
           {/* Certificate */}
-          <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-center">
+          {/* <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-center">
             <div className="w-full h-40 rounded-lg flex items-center justify-center text-gray-400">
               <img
                 src={`/images/kratkaya.png`}
                 className="w-full object-cover"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Partners */}
-          <div className="bg-white rounded-2xl shadow p-6">
+          {/* <div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-blue-700 font-semibold mb-4">СМИ о рейтинге</h3>
 
             <div className="grid grid-cols-1 gap-4">
@@ -417,10 +418,76 @@ export default function RankingHome() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */} 
+      <section class="py-10">
+  <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6">
+    {/* Первый блок: Теперь лента новостей */}
+    <div className="bg-white rounded-2xl shadow p-6 flex flex-col h-[320px]"> 
+      <h3 className="text-orange-500 font-semibold mb-4 flex justify-between items-center">
+        Новости
+        <span className="text-[10px] bg-orange-100 px-2 py-1 rounded text-orange-600 uppercase">Свежее</span>
+      </h3>
       
+      {/* Контейнер со списком новостей */}
+      <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="border-l-2 border-orange-500 pl-3 py-1 hover:bg-orange-50 transition-colors cursor-pointer">
+          <p className="text-[10px] text-gray-400">Сегодня, 12:40</p>
+          <h4 className="text-sm font-medium leading-tight text-gray-800">Опубликованы новые критерии оценки региональных вузов</h4>
+        </div>
+
+        <div className="border-l-2 border-transparent pl-3 py-1 hover:border-orange-500 hover:bg-orange-50 transition-colors cursor-pointer">
+          <p className="text-[10px] text-gray-400">Вчера</p>
+          <h4 className="text-sm font-medium leading-tight text-gray-800">Старт ежегодного анкетного опроса студентов и выпускников</h4>
+        </div>
+
+        <div className="border-l-2 border-transparent pl-3 py-1 hover:border-orange-500 hover:bg-orange-50 transition-colors cursor-pointer">
+          <p className="text-[10px] text-gray-400">28 мая</p>
+          <h4 className="text-sm font-medium leading-tight text-gray-800">Завершился этап сбора данных от участников рейтинга</h4>
+        </div>
+      </div>
+
+      <button className="mt-auto pt-4 text-orange-500 hover:text-orange-600 text-sm font-bold flex items-center">
+        Все новости 
+        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    {/* Certificate (Оставляем без изменений) */}
+    <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-center">
+      <div className="w-full h-40 rounded-lg flex items-center justify-center text-gray-400">
+        <img
+          src={`/images/kratkaya.png`}
+          className="w-full object-cover"
+          alt="Краткая информация"
+        />
+      </div>
+    </div>
+
+    {/* Partners (Оставляем без изменений) */}
+    <div className="bg-white rounded-2xl shadow p-6">
+      <h3 className="text-blue-700 font-semibold mb-4">СМИ о рейтинге</h3>
+      <div className="grid grid-cols-1 gap-4">
+        <div className="flex items-center justify-center bg-slate-50 rounded-xl p-4 h-24">
+          <img
+            src="/images/bilimdi_el.png"
+            className="max-h-12 object-contain"
+            alt="Bilim El"
+          />
+        </div>
+        <div className="flex items-center justify-center rounded-xl p-4 h-24">
+          <img
+            src="/images/kp.jpg"
+            className="max-h-12 object-contain"
+            alt="Казахстанская правда"
+          />
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
       {/* News */}
-      <section>
+      {/* <section>
         <div className="max-w-7xl mx-auto px-4 py-8">
           <h3 className="text-blue-700 font-semibold mb-4">Новости</h3>
 
@@ -442,7 +509,7 @@ export default function RankingHome() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
 
 
@@ -452,33 +519,91 @@ export default function RankingHome() {
 
       {/* ================= METHODOLOGY ================= */}
       <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+        
+  <div className="">
+  <div className="max-w-7xl mx-auto px-6 text-center">
+    
+    {/* Определение градиента (нужно добавить один раз в начале секции) */}
+    <svg width="0" height="0" className="absolute">
+      <defs>
+        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#1E40AF" /> {/* Темно-синий (ваш цвет) */}
+          <stop offset="100%" stopColor="#60A5FA" /> {/* Светло-голубой для перехода */}
+        </linearGradient>
+      </defs>
+    </svg>
 
-          <h2 className="text-3xl font-semibold mb-14">
-            Принципы методологии
-          </h2>
+    <h2 className="text-3xl font-semibold mb-20 text-slate-900">
+      Принципы методологии
+    </h2>
 
-          <div className="grid md:grid-cols-4 gap-10">
-
-            {[
-              "Объективность показателей",
-              "Прозрачность расчётов",
-              "Международные стандарты",
-              "Многофакторный анализ"
-            ].map((item, index) => (
-              <div key={index} className="space-y-4">
-                <div className="w-14 h-14 bg-[#1E40AF]/10 rounded-2xl" />
-                <div className="font-semibold">
-                  {item}
-                </div>
-                <div className="text-sm text-slate-500">
-                  Методология основана на проверяемых данных.
-                </div>
-              </div>
-            ))}
-
-          </div>
+    <div className="grid md:grid-cols-4 gap-x-10 gap-y-16">
+      
+      {/* Элемент 1 - Объективность */}
+      <div className="flex flex-col items-center group">
+        <div className="w-[84px] h-[84px] bg-white border border-slate-100 rounded-full flex items-center justify-center mb-8 shadow-[0_10px_40px_rgba(30,64,175,0.03)] group-hover:border-blue-200 transition-all duration-300 group-hover:shadow-[0_15px_50px_rgba(30,64,175,0.06)] group-hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="url(#blueGradient)" className="w-9 h-9">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6.119c-.035.505-.05 1.014-.05 1.526 0 4.69 2.358 8.817 5.94 11.262l1.17.8 1.17-.8c3.582-2.445 5.94-6.572 5.94-11.262 0-.512-.015-1.02-.05-1.526z" />
+          </svg>
         </div>
+        <h4 className="font-semibold text-slate-900 mb-3 text-lg leading-snug">
+          Объективность показателей
+        </h4>
+        <p className="text-sm text-slate-500 leading-relaxed max-w-[240px]">
+          Методология основана на проверяемых данных.
+        </p>
+      </div>
+
+      {/* Элемент 2 - Прозрачность */}
+      <div className="flex flex-col items-center group">
+        <div className="w-[84px] h-[84px] bg-white border border-slate-100 rounded-full flex items-center justify-center mb-8 shadow-[0_10px_40px_rgba(30,64,175,0.03)] group-hover:border-blue-200 transition-all duration-300 group-hover:shadow-[0_15px_50px_rgba(30,64,175,0.06)] group-hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="url(#blueGradient)" className="w-9 h-9">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        <h4 className="font-semibold text-slate-900 mb-3 text-lg leading-snug">
+          Прозрачность расчётов
+        </h4>
+        <p className="text-sm text-slate-500 leading-relaxed max-w-[240px]">
+          Методология основана на проверяемых данных.
+        </p>
+      </div>
+
+      {/* Элемент 3 - Международные стандарты */}
+      <div className="flex flex-col items-center group">
+        <div className="w-[84px] h-[84px] bg-white border border-slate-100 rounded-full flex items-center justify-center mb-8 shadow-[0_10px_40px_rgba(30,64,175,0.03)] group-hover:border-blue-200 transition-all duration-300 group-hover:shadow-[0_15px_50px_rgba(30,64,175,0.06)] group-hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="url(#blueGradient)" className="w-9 h-9">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582" />
+          </svg>
+        </div>
+        <h4 className="font-semibold text-slate-900 mb-3 text-lg leading-snug">
+          Международные стандарты
+        </h4>
+        <p className="text-sm text-slate-500 leading-relaxed max-w-[240px]">
+          Методология основана на проверяемых данных.
+        </p>
+      </div>
+
+      {/* Элемент 4 - Многофакторный анализ */}
+      <div className="flex flex-col items-center group">
+        <div className="w-[84px] h-[84px] bg-white border border-slate-100 rounded-full flex items-center justify-center mb-8 shadow-[0_10px_40px_rgba(30,64,175,0.03)] group-hover:border-blue-200 transition-all duration-300 group-hover:shadow-[0_15px_50px_rgba(30,64,175,0.06)] group-hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="url(#blueGradient)" className="w-9 h-9">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z" />
+          </svg>
+        </div>
+        <h4 className="font-semibold text-slate-900 mb-3 text-lg leading-snug">
+          Многофакторный анализ
+        </h4>
+        <p className="text-sm text-slate-500 leading-relaxed max-w-[240px]">
+          Методология основана на проверяемых данных.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</div>
       </section>
 
 
