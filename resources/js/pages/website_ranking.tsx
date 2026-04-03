@@ -13,7 +13,7 @@ import {
   Waypoints,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useState } from "react";
-import RankingHeader from "@/components/header/navigation/ranking-header";
+import RankingHero, { RankingHeroPanel, RankingHeroStat } from "@/components/hero/ranking-hero";
 
 type MetricColumn = {
   key: string;
@@ -181,82 +181,56 @@ export default function WebsiteRankingPage({
       <Head title="Рейтинг сайтов вузов" />
 
       <div className="min-h-screen bg-[#f5f8fc] text-slate-950">
-        <section className="relative overflow-hidden bg-[#0a2c63] text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.2),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(34,197,94,0.16),transparent_25%)]" />
-          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.15)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <RankingHero
+          currentPath="/website-ranking"
+          badge={
+            <>
+              <Globe className="h-4 w-4 text-blue-300" />
+              Архив рейтинга сайтов {archiveRange}
+            </>
+          }
+          title="Рейтинг веб-сайтов вузов Казахстана"
+          description="Интерактивная страница собирает архив IQAA по сайтам вузов: единые списки разных лет, профильные категории 2022 года и методологию по критериям оценки цифровой открытости университетов."
+          actions={
+            <>
+              <a
+                href="#website-year-grid"
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+              >
+                Выбрать год
+                <ChevronRight className="h-4 w-4" />
+              </a>
+              <a
+                href="#website-ranking-table"
+                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white"
+              >
+                Смотреть таблицу
+              </a>
+            </>
+          }
+          aside={
+            <div className="space-y-4 lg:ml-auto lg:max-w-md">
+              <div className="grid grid-cols-2 gap-3">
+                <RankingHeroStat label="Год" value={selectedYear} valueClassName="text-3xl" />
+                <RankingHeroStat label="Записей" value={selectedRating?.entryCount ?? 0} valueClassName="text-3xl" />
+                <RankingHeroStat label="Категорий" value={selectedRating?.categoryCount ?? 0} valueClassName="text-3xl" />
+                <RankingHeroStat label="Метрик" value={selectedRating?.metricCount ?? 0} valueClassName="text-3xl" />
+              </div>
 
-          <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-6">
-            <RankingHeader currentPath="/website-ranking" />
-
-            <div className="grid gap-10 pt-10 lg:grid-cols-[minmax(0,1.05fr)_360px] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-blue-100">
-                  <Globe className="h-4 w-4" />
-                  Архив рейтинга сайтов {archiveRange}
+              <RankingHeroPanel className="rounded-[1.75rem] p-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-300/70">Лучший итог</div>
+                <div className="mt-3 text-3xl font-semibold text-white">
+                  {selectedRating && selectedRating.topScore !== null ? formatScore(selectedRating.topScore) : "н/д"}
                 </div>
-
-                <h1 className="max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">
-                  Рейтинг веб-сайтов вузов Казахстана
-                </h1>
-
-                <p className="mt-5 max-w-2xl text-base leading-7 text-blue-100 md:text-lg">
-                  Интерактивная страница собирает архив IQAA по сайтам вузов: единые списки разных лет,
-                  профильные категории 2022 года и методологию по критериям оценки цифровой
-                  открытости университетов.
+                <p className="mt-3 text-sm leading-6 text-blue-100/65">
+                  {selectedRating?.categoryCount && selectedRating.categoryCount > 1
+                    ? "В этом году рейтинг опубликован по отдельным профилям вузов."
+                    : "В этом году рейтинг опубликован единым списком по казахстанским вузам."}
                 </p>
-
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <a
-                    href="#website-year-grid"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#10b981] px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
-                  >
-                    Выбрать год
-                    <ChevronRight className="h-4 w-4" />
-                  </a>
-                  <a
-                    href="#website-ranking-table"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    Смотреть таблицу
-                  </a>
-                </div>
-              </div>
-
-              <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 backdrop-blur">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Год</div>
-                    <div className="mt-3 text-4xl font-semibold">{selectedYear}</div>
-                  </div>
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Записей</div>
-                    <div className="mt-3 text-4xl font-semibold">{selectedRating?.entryCount ?? 0}</div>
-                  </div>
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Категорий</div>
-                    <div className="mt-3 text-4xl font-semibold">{selectedRating?.categoryCount ?? 0}</div>
-                  </div>
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Метрик</div>
-                    <div className="mt-3 text-4xl font-semibold">{selectedRating?.metricCount ?? 0}</div>
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/20 p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-blue-100">Лучший итог</div>
-                  <div className="mt-2 text-3xl font-semibold">
-                    {selectedRating && selectedRating.topScore !== null ? formatScore(selectedRating.topScore) : "н/д"}
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-blue-100/85">
-                    {selectedRating?.categoryCount && selectedRating.categoryCount > 1
-                      ? "В этом году рейтинг опубликован по отдельным профилям вузов."
-                      : "В этом году рейтинг опубликован единым списком по казахстанским вузам."}
-                  </p>
-                </div>
-              </div>
+              </RankingHeroPanel>
             </div>
-          </div>
-        </section>
+          }
+        />
 
         <main className="mx-auto max-w-7xl px-6 py-12">
           <section

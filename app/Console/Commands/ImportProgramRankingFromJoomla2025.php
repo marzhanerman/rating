@@ -92,7 +92,7 @@ class ImportProgramRankingFromJoomla2025 extends Command
                     ],
                     [
                         'rank' => $record->place,
-                        'score' => $record->total_total,
+                        'total_score' => $record->total_total,
                     ]
                 );               
                 
@@ -266,7 +266,7 @@ class ImportProgramRankingFromJoomla2025 extends Command
                         ],
                         [
                             'rank' => $rank,
-                            'score' => (float) str_replace(',', '.', $score),
+                            'total_score' => (float) str_replace(',', '.', $score),
                             'programs' => $programs,
                         ]
                     );

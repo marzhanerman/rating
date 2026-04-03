@@ -10,13 +10,13 @@ export default function Logo() {
       />
 
       <div className="leading-tight">
-        <h1 className="text-sm font-semibold text-blue-900 ">
-          Независимое агентство по обеспечению
-        </h1>
-        <p className="text-sm font-semibold text-blue-900 ">
-        {/*md:text-base*/}        
-          качества в образовании - Рейтинг
-        </p>
+        <div className="font-semibold text-[#0F172A]">
+  IQAA Ranking
+</div>
+        <div className="text-[11px] text-slate-500">
+  Независимое агентство <br/>по обеспечению качества в образовании
+</div>
+
       </div>
     </Link>
   );

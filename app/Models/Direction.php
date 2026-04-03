@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Direction extends Model
 {
@@ -12,4 +13,9 @@ class Direction extends Model
         'field_id',
         'year',
     ];
+
+    public function field(): BelongsTo
+    {
+        return $this->belongsTo(Field::class);
+    }
 }

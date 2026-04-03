@@ -1,7 +1,7 @@
 import { Head, Link } from "@inertiajs/react";
 import { CheckCircle2, ChevronRight, FileSpreadsheet, Globe2, Scale, ShieldCheck, Users } from "lucide-react";
 import { useState } from "react";
-import RankingHeader from "@/components/header/navigation/ranking-header";
+import RankingHero from "@/components/hero/ranking-hero";
 
 type Principle = {
   id: string;
@@ -207,79 +207,67 @@ export default function IregPage() {
       <Head title="IREG и Берлинские принципы" />
 
       <div className="min-h-screen bg-[#f7f7f2] text-slate-950">
-        <section className="relative overflow-hidden bg-[#0f172a] text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.18),transparent_34%)]" />
-          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px]" />
-
-          <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-6">
-            <RankingHeader currentPath="/ireg" />
-
-            <div className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.24em] text-blue-100">
-                  <Globe2 className="h-4 w-4" />
-                  IREG и Берлинские принципы
-                </div>
-
-                <h1 className="text-4xl font-semibold leading-tight md:text-6xl">Международная рамка доверия к рейтингу</h1>
-
-                <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-                  Эта страница объясняет, почему IREG и Берлинские принципы важны для понимания методологии рейтинга IQAA, и отдельно
-                  показывает подтвержденное участие руководства IQAA в конференциях IREG.
-                </p>
-
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <a
-                    href="#conferences"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
-                  >
-                    Смотреть конференции IQAA
-                    <ChevronRight className="h-4 w-4" />
-                  </a>
-                  <a
-                    href="#archive"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    Открыть архивный блок
-                  </a>
+        <RankingHero
+          currentPath="/ireg"
+          badge={
+            <>
+              <Globe2 className="h-4 w-4 text-blue-300" />
+              IREG и Берлинские принципы
+            </>
+          }
+          title="Международная рамка доверия к рейтингу"
+          description="Эта страница объясняет, почему IREG и Берлинские принципы важны для понимания методологии рейтинга IQAA, и отдельно показывает подтвержденное участие руководства IQAA в конференциях IREG."
+          actions={
+            <>
+              <a
+                href="#conferences"
+                className="btn-orange inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              >
+                Смотреть конференции IQAA
+                <ChevronRight className="h-4 w-4" />
+              </a>
+              <a
+                href="#archive"
+                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white"
+              >
+                Открыть архивный блок
+              </a>
+            </>
+          }
+          aside={
+            <div className="space-y-4 lg:ml-auto lg:max-w-lg">
+              <div className="rounded-[1.8rem] bg-white p-5 text-slate-950 shadow-2xl shadow-slate-950/20">
+                <div className="text-xs uppercase tracking-[0.24em] text-blue-700">Логотип IREG</div>
+                <div className="mt-4 flex min-h-[96px] items-center justify-center rounded-[1.3rem] bg-slate-50 p-6 ring-1 ring-slate-200">
+                  <img src="/images/ireg-logo.png" alt="Логотип IREG" className="h-auto w-full max-w-[200px] object-contain" />
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="rounded-[1.8rem] bg-white p-5 text-slate-950 shadow-2xl shadow-slate-950/20">
-                  <div className="text-xs uppercase tracking-[0.24em] text-blue-700">Логотип IREG</div>
-                  <div className="mt-4 flex min-h-[96px] items-center justify-center rounded-[1.3rem] bg-slate-50 p-6 ring-1 ring-slate-200">
-                    <img src="/images/ireg-logo.png" alt="Логотип IREG" className="h-auto w-full max-w-[200px] object-contain" />
-                  </div>
+              <div className="overflow-hidden rounded-[1.8rem] bg-white shadow-2xl shadow-slate-950/20">
+                <img
+                  src="/storage/images/ireg-certificate.png"
+                  alt="Архивный документ IREG и Берлинских принципов"
+                  className="h-[260px] w-full object-cover object-center"
+                />
+                <div className="p-5 text-slate-950">
+                  <div className="text-xs uppercase tracking-[0.24em] text-orange-700">Документ / скан</div>
+                  <div className="mt-2 text-xl font-semibold">Визуальный документ из архива IREG</div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    Нейтральный визуал, который поддерживает разговор о международных принципах качества и историческом контексте ранжирования.
+                  </p>
                 </div>
+              </div>
 
-                <div className="overflow-hidden rounded-[1.8rem] bg-white shadow-2xl shadow-slate-950/20">
-                  <img
-                    src="/storage/images/ireg-certificate.png"
-                    alt="Архивный документ IREG и Берлинских принципов"
-                    className="h-[260px] w-full object-cover object-center"
-                  />
-                  <div className="p-5 text-slate-950">
-                    <div className="text-xs uppercase tracking-[0.24em] text-orange-700">Документ / скан</div>
-                    <div className="mt-2 text-xl font-semibold">Визуальный документ из архива IREG</div>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Нейтральный визуал, который поддерживает разговор о международных принципах качества и историческом контексте
-                      ранжирования.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="overflow-hidden rounded-[1.8rem] ring-1 ring-white/10">
-                  <img
-                    src="/storage/images/ireg-conferences/ireg-2023-tashkent.jpg"
-                    alt="Участники IREG 2023 в Ташкенте и Самарканде"
-                    className="h-[180px] w-full object-cover object-center"
-                  />
-                </div>
+              <div className="overflow-hidden rounded-[1.8rem] ring-1 ring-white/10">
+                <img
+                  src="/storage/images/ireg-conferences/ireg-2023-tashkent.jpg"
+                  alt="Участники IREG 2023 в Ташкенте и Самарканде"
+                  className="h-[180px] w-full object-cover object-center"
+                />
               </div>
             </div>
-          </div>
-        </section>
+          }
+        />
 
         <main className="mx-auto max-w-7xl px-6 py-12">
           <section className="border-b border-slate-200 pb-10">

@@ -163,7 +163,7 @@ export default function RankingHome() {
               href="/ranking"
               className="px-5 py-2.5 rounded-xl bg-[#F97316] text-white text-sm font-medium hover:bg-orange-600 transition"
             >
-              Смотреть рейтинг
+              Смотреть рейтинг1
             </Link>
           </div>
         </div>

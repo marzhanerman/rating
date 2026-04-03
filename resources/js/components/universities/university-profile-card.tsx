@@ -1,4 +1,6 @@
+import { Link } from "@inertiajs/react";
 import {
+  ArrowUpRight,
   Building2,
   Globe,
   GraduationCap,
@@ -8,7 +10,10 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import UniversityTrendChart, { type UniversityHistoryPoint } from "@/components/universities/university-trend-chart";
+import UniversityTrendChart, {
+  type UniversityHistoryPoint,
+} from "@/components/universities/university-trend-chart";
+import { cn } from "@/lib/utils";
 
 export type UniversityProfile = {
   id: number | null;
@@ -24,6 +29,12 @@ export type UniversityProfile = {
   foundedYear?: number | null;
   studentCount?: number | null;
   history: UniversityHistoryPoint[];
+};
+
+type UniversityProfileCardProps = {
+  profile: UniversityProfile;
+  detailsHref?: string;
+  variant?: "default" | "detail";
 };
 
 const categoryStyles: Record<string, string> = {
@@ -53,7 +64,12 @@ const formatStudentCount = (value: number | null | undefined) => {
 const formatPlaceholder = (value: string | number | null | undefined, fallback: string) =>
   value === null || value === undefined || value === "" ? fallback : String(value);
 
-export default function UniversityProfileCard({ profile }: { profile: UniversityProfile }) {
+export default function UniversityProfileCard({
+  profile,
+  detailsHref,
+  variant = "default",
+}: UniversityProfileCardProps) {
+  const isDetail = variant === "detail";
   const currentPoint = profile.history[profile.history.length - 1];
   const previousPoint = profile.history.length > 1 ? profile.history[profile.history.length - 2] : null;
   const bestRank = profile.history.length > 0 ? Math.min(...profile.history.map((item) => item.rank)) : profile.currentRank;
@@ -76,79 +92,107 @@ export default function UniversityProfileCard({ profile }: { profile: University
       : `${scoreDelta > 0 ? "+" : ""}${scoreDelta.toFixed(2)} к прошлому году`;
 
   return (
-    <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+    <article
+      className={cn(
+        "rounded-[2rem] border border-slate-200 bg-white",
+        isDetail ? "p-4 sm:p-5 xl:p-6" : "p-5",
+      )}
+    >
       <div className="relative overflow-hidden rounded-[1.8rem] bg-slate-950 text-white">
         <div
-          className="h-52 bg-cover bg-center opacity-45"
+          className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.16), rgba(15,23,42,0.8)), url('${getUniversityImage(
-              profile.id,
-            )}')`,
+            backgroundImage: getUniversityImage(profile.id)
+              ? `url('${getUniversityImage(profile.id)}')`
+              : "linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,64,175,0.78))",
           }}
+        />
+        <div
+          className={cn(
+            "absolute inset-0",
+            isDetail
+              ? "bg-gradient-to-t from-slate-950 via-slate-950/58 to-slate-900/12"
+              : "bg-gradient-to-t from-slate-950 via-slate-950/72 to-slate-900/18",
+          )}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.24),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.18),transparent_28%)]" />
 
-        <div className="absolute left-5 top-5">
-          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${getCategoryStyle(profile.institutionalCategory)}`}>
-            {profile.institutionalCategory}
-          </span>
-        </div>
+        <div
+          className={cn(
+            "relative flex h-full flex-col justify-between",
+            isDetail ? "min-h-[21rem] p-5 md:min-h-[27rem] md:p-7 xl:min-h-[31rem]" : "min-h-[13rem] p-5",
+          )}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${getCategoryStyle(profile.institutionalCategory)}`}
+            >
+              {profile.institutionalCategory}
+            </span>
 
-        <div className="absolute right-5 top-5 rounded-full bg-white/10 px-4 py-2 text-lg font-semibold text-white">
-          #{profile.currentRank}
-        </div>
+            <div
+              className={cn(
+                "rounded-full bg-white/10 text-white backdrop-blur-sm",
+                isDetail ? "px-5 py-2.5 text-2xl font-semibold" : "px-4 py-2 text-lg font-semibold",
+              )}
+            >
+              #{profile.currentRank}
+            </div>
+          </div>
 
-        <div className="absolute bottom-5 left-5 right-5">
-          <div className="text-xs uppercase tracking-[0.24em] text-blue-100">Паспорт вуза</div>
-          <h3 className="mt-3 text-2xl font-semibold leading-tight">
-            {profile.currentName ?? "Название будет добавлено"}
-          </h3>
-          <div className="mt-3 flex items-center gap-2 text-sm text-white/80">
-            <MapPin className="h-4 w-4" />
-            {profile.city ?? "Город будет добавлен"}
+          <div className={cn("max-w-3xl", isDetail ? "space-y-4" : "space-y-3")}>
+            <div className="text-xs uppercase tracking-[0.24em] text-blue-100">Паспорт вуза</div>
+
+            <h3
+              className={cn(
+                "font-semibold leading-tight",
+                isDetail ? "text-3xl md:text-4xl xl:text-[2.8rem]" : "text-2xl",
+              )}
+            >
+              {profile.currentName ?? "Название будет добавлено"}
+            </h3>
+
+            <div
+              className={cn(
+                "flex items-center gap-2 text-white/85",
+                isDetail ? "text-base md:text-lg" : "text-sm",
+              )}
+            >
+              <MapPin className={cn(isDetail ? "h-5 w-5" : "h-4 w-4")} />
+              {profile.city ?? "Город будет добавлен"}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-4">
-        <div className="rounded-[1.35rem] bg-slate-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Trophy className="h-4 w-4 text-blue-700" />
-            Текущая позиция
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">#{profile.currentRank}</div>
-          <div className="mt-2 text-xs text-slate-500">{trendLabel}</div>
-        </div>
-
-        <div className="rounded-[1.35rem] bg-slate-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <AwardIcon />
-            Итоговый балл
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">{profile.currentScore.toFixed(2)}</div>
-          <div className="mt-2 text-xs text-slate-500">{scoreLabel}</div>
-        </div>
-
-        <div className="rounded-[1.35rem] bg-slate-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <GraduationCap className="h-4 w-4 text-blue-700" />
-            Лучший результат
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">#{bestRank}</div>
-          <div className="mt-2 text-xs text-slate-500">За весь доступный период</div>
-        </div>
-
-        <div className="rounded-[1.35rem] bg-slate-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Users className="h-4 w-4 text-blue-700" />
-            Лет в рейтинге
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">{yearsInRanking}</div>
-          <div className="mt-2 text-xs text-slate-500">История институционального рейтинга</div>
-        </div>
+      <div className={cn("mt-5 grid gap-3", isDetail ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-4")}>
+        <MetricCard
+          icon={<Trophy className="h-4 w-4 text-blue-700" />}
+          label="Текущая позиция"
+          value={`#${profile.currentRank}`}
+          hint={trendLabel}
+        />
+        <MetricCard
+          icon={<AwardIcon />}
+          label="Итоговый балл"
+          value={profile.currentScore.toFixed(2)}
+          hint={scoreLabel}
+        />
+        <MetricCard
+          icon={<GraduationCap className="h-4 w-4 text-blue-700" />}
+          label="Лучший результат"
+          value={`#${bestRank}`}
+          hint="За весь доступный период"
+        />
+        <MetricCard
+          icon={<Users className="h-4 w-4 text-blue-700" />}
+          label="Лет в рейтинге"
+          value={String(yearsInRanking)}
+          hint="История институционального рейтинга"
+        />
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <div className={cn("mt-5 grid gap-3", isDetail ? "md:grid-cols-2" : "md:grid-cols-2")}>
         <InfoSlot
           icon={<Globe className="h-4 w-4 text-blue-700" />}
           label="Веб-сайт"
@@ -187,7 +231,42 @@ export default function UniversityProfileCard({ profile }: { profile: University
       <div className="mt-5">
         <UniversityTrendChart history={profile.history} />
       </div>
+
+      {detailsHref ? (
+        <div className="mt-5 border-t border-slate-200 pt-5">
+          <Link
+            href={detailsHref}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+          >
+            Страница вуза
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+      ) : null}
     </article>
+  );
+}
+
+function MetricCard({
+  icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  hint: string;
+}) {
+  return (
+    <div className="rounded-[1.35rem] bg-slate-50 p-4">
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-2 text-3xl font-semibold text-slate-950">{value}</div>
+      <div className="mt-2 text-xs text-slate-500">{hint}</div>
+    </div>
   );
 }
 

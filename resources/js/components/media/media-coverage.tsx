@@ -1,4 +1,3 @@
-import { ExternalLink, Newspaper } from "lucide-react";
 import { useState } from "react";
 
 type Article = {
@@ -7,142 +6,111 @@ type Article = {
   link: string;
 };
 
-type MediaOutlet = {
+type Media = {
   name: string;
   logo: string;
   articles: Article[];
 };
 
-type MediaCoverageProps = {
-  title?: string;
-  description?: string;
-  items?: MediaOutlet[];
-};
+export default function MediaCoverage() {
+  const [active, setActive] = useState<number>(0);
 
-const defaultMediaItems: MediaOutlet[] = [
-  {
-    name: "Egemen Kazakhstan",
-    logo: "/images/egemen.png",
-    articles: [
-      {
-        title: "Опубликован национальный рейтинг вузов Казахстана",
-        date: "2024",
-        link: "#",
-      },
-      {
-        title: "Новый этап независимой оценки качества высшего образования",
-        date: "2023",
-        link: "#",
-      },
-    ],
-  },
-  {
-    name: "Казахстанская правда",
-    logo: "/images/kp.jpg",
-    articles: [
-      {
-        title: "Эксперты представили результаты институционального рейтинга вузов",
-        date: "2024",
-        link: "#",
-      },
-    ],
-  },
-  {
-    name: "Bilimdi EL",
-    logo: "/images/bilimdi_el.png",
-    articles: [
-      {
-        title: "Опубликованы результаты рейтинга высших учебных заведений Казахстана",
-        date: "2024",
-        link: "#",
-      },
-    ],
-  },
-];
-
-export default function MediaCoverage({
-  title = "СМИ о рейтинге",
-  description = "Подборка публикаций и новостей в ведущих медиа Казахстана.",
-  items = defaultMediaItems,
-}: MediaCoverageProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeOutlet = items[activeIndex] ?? items[0];
+  const media: Media[] = [
+    {
+      name: "Egemen Kazakhstan",
+      logo: "/images/egemen.png",
+      articles: [
+        {
+          title: "Қазақстан жоғары оқу орындарының ұлттық рейтингі жарияланды",
+          date: "2024",
+          link: "#",
+        },
+        {
+          title: "Білім сапасын бағалаудың жаңа кезеңі",
+          date: "2023",
+          link: "#",
+        },
+      ],
+    },
+    {
+      name: "Казахстанская правда",
+      logo: "/images/kp.jpg",
+      articles: [
+        {
+          title: "Опубликован национальный рейтинг вузов Казахстана",
+          date: "2024",
+          link: "#",
+        },
+      ],
+    },
+    {
+      name: "Bilimdi El",
+      logo: "/images/bilimdi_el.png",
+      articles: [
+        {
+          title: "Қазақстандық ЖОО рейтингі нәтижелері жарияланды",
+          date: "2024",
+          link: "#",
+        },
+      ],
+    },
+  ];
 
   return (
-    <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <div className="flex flex-col gap-3 border-b border-slate-200 pb-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="text-sm font-medium uppercase tracking-[0.24em] text-blue-700">Медиа</div>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-950">{title}</h2>
-        </div>
+    <div className="bg-white rounded-2xl  p-6">
+      
+      {/* Заголовок */}
+      <h3 className="text-blue-700 font-semibold mb-2">
+        Авторитетные публикации о рейтинге
+      </h3>
 
-        <p className="max-w-xl text-sm leading-6 text-slate-500">{description}</p>
+      <p className="text-sm text-gray-500 mb-6">
+        Публикации в ведущих СМИ Казахстана
+      </p>
+
+      {/* Логотипы */}
+      <div className="flex gap-6 mb-6 flex-wrap">
+        {media.map((item, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={`p-3 rounded-xl transition 
+              ${
+                active === i
+                  ? "bg-blue-50 shadow"
+                  : "opacity-60 hover:opacity-100"
+              }
+            `}
+          >
+            <img
+              src={item.logo}
+              alt={item.name}
+              className="h-10 grayscale hover:grayscale-0 transition"
+            />
+          </button>
+        ))}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="space-y-3">
-          {items.map((outlet, index) => {
-            const isActive = index === activeIndex;
+      {/* Статьи */}
+      <div className="space-y-3">
+        {media[active].articles.map((article, i) => (
+          <a
+            key={i}
+            href={article.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block border rounded-xl p-4 transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <p className="font-medium text-gray-800">
+              {article.title}
+            </p>
 
-            return (
-              <button
-                key={outlet.name}
-                type="button"
-                onClick={() => setActiveIndex(index)}
-                className={`flex w-full items-center gap-4 rounded-[1.5rem] border px-4 py-4 text-left transition ${
-                  isActive
-                    ? "border-blue-200 bg-blue-50 shadow-sm"
-                    : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
-                }`}
-              >
-                <div className="flex h-14 w-25 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-                  <img src={outlet.logo} alt={outlet.name} className="max-h-10 max-w-[100px] object-contain" />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="truncate text-base font-semibold text-slate-950">{outlet.name}</div>
-                  <div className="mt-1 text-sm text-slate-500">{outlet.articles.length} публикаций</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="rounded-[1.75rem] bg-slate-50 p-5 ring-1 ring-slate-200">
-          <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
-            <div className="rounded-2xl bg-blue-100 p-3 text-blue-700">
-              <Newspaper className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-sm text-slate-500">Выбрано издание</div>
-              <div className="text-lg font-semibold text-slate-950">{activeOutlet?.name}</div>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {activeOutlet?.articles.map((article) => (
-              <a
-                key={`${activeOutlet.name}-${article.title}`}
-                href={article.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-[1.5rem] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="text-xs font-medium uppercase tracking-[0.2em] text-blue-700">{article.date}</div>
-                    <h3 className="mt-2 text-lg font-semibold leading-snug text-slate-950">{article.title}</h3>
-                  </div>
-
-                  <div className="rounded-full bg-slate-100 p-2 text-slate-500">
-                    <ExternalLink className="h-4 w-4" />
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
+            <p className="text-sm text-gray-500 mt-1">
+              {article.date}
+            </p>
+          </a>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

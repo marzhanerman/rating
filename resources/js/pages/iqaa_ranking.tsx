@@ -1,7 +1,7 @@
-import { Head, Link } from "@inertiajs/react";
-import { Award, Building2, ChevronRight, Filter, GraduationCap, Search, Trophy } from "lucide-react";
-import { useState } from "react";
-import RankingHeader from "@/components/header/navigation/ranking-header";
+import { Head, Link, router } from "@inertiajs/react";
+import { ArrowUpRight, Award, Building2, ChevronRight, Filter, GraduationCap, Search, Trophy } from "lucide-react";
+import { type ChangeEvent, useEffect, useState } from "react";
+import RankingHero, { RankingHeroPanel, RankingHeroStat } from "@/components/hero/ranking-hero";
 import MediaCoverage from "@/components/media/media-coverage";
 import UniversityProfileCard, { type UniversityProfile } from "@/components/universities/university-profile-card";
 
@@ -19,6 +19,7 @@ type Rating = {
 
 type Props = {
   ratingYear?: number | null;
+  availableYears?: number[];
   ratings?: Rating[];
   universityProfiles?: UniversityProfile[];
 };
@@ -39,18 +40,47 @@ const getUniversityImage = (universityId?: number) =>
   universityId ? `/storage/images/universities/${universityId}.jpg` : "";
 
 const formatScore = (value: number | string) => Number(value).toFixed(2);
+const getUniversityProfileHref = (universityId?: number | null, year?: number | null) =>
+  universityId ? `/ranking/university/${universityId}${year ? `?year=${year}` : ""}` : undefined;
 
-export default function IQAARanking({ ratingYear, ratings = [], universityProfiles = [] }: Props) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+export default function IQAARanking({
+  ratingYear,
+  availableYears = [],
+  ratings = [],
+  universityProfiles = [],
+}: Props) {
+  const categories = [...new Set(ratings.map((rating) => rating.institutional_category).filter(Boolean))];
+  const categorySignature = categories.join("||");
+  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0] ?? "");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = ["all", ...new Set(ratings.map((rating) => rating.institutional_category).filter(Boolean))];
+  const handleYearChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextYear = Number(event.target.value);
+
+    if (Number.isNaN(nextYear) || nextYear === ratingYear) {
+      return;
+    }
+
+    router.get(
+      "/ranking",
+      { year: nextYear },
+      {
+        preserveScroll: true,
+        replace: true,
+      },
+    );
+  };
+
+  useEffect(() => {
+    setSelectedCategory((currentCategory) =>
+      categories.includes(currentCategory) ? currentCategory : (categories[0] ?? ""),
+    );
+  }, [categorySignature]);
 
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
 
   const filteredRatings = ratings.filter((rating) => {
-    const matchesCategory =
-      selectedCategory === "all" || rating.institutional_category === selectedCategory;
+    const matchesCategory = !selectedCategory || rating.institutional_category === selectedCategory;
     const universitySearchIndex = [
       rating.university?.current_name ?? "",
       rating.university?.city ?? "",
@@ -100,77 +130,185 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
       <Head title="Рейтинг вузов" />
 
       <div className="min-h-screen bg-[#f6f8fc] text-slate-950">
-        <section className="relative overflow-hidden bg-[#0d2b6b] text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.35),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.22),transparent_30%)]" />
-          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <RankingHero
+          currentPath="/ranking"
+          badge={
+            <>
+              <Award className="h-4 w-4 text-blue-300" />
+              Национальный рейтинг {ratingYear ?? "IQAA"}
+            </>
+          }
+          title="Рейтинг университетов Казахстана"
+          description="Актуальная таблица вузов с ранжированием по итоговому баллу, разбивкой по институциональным категориям и удобным обзором лидеров года."
+          actions={
+            <>
+              <a
+                href="#ranking-table"
+                className="btn-orange inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              >
+                Смотреть таблицу
+                <ChevronRight className="h-4 w-4" />
+              </a>
 
-          <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-6">
-            <RankingHeader currentPath="/ranking" />
+              <Link
+                href="/"
+                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white"
+              >
+                На главную
+              </Link>
 
-            <div className="grid gap-10 pt-12 lg:grid-cols-[minmax(0,1.05fr)_360px] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-blue-100">
-                  <Award className="h-4 w-4" />
-                  Национальный рейтинг {ratingYear ?? "IQAA"}
-                </div>
-
-                <h1 className="max-w-2xl text-4xl font-semibold leading-tight md:text-6xl">
-                  Рейтинг университетов Казахстана
-                </h1>
-
-                <p className="mt-5 max-w-2xl text-base leading-7 text-blue-100 md:text-lg">
-                  Актуальная таблица вузов с ранжированием по итоговому баллу, разбивкой по институциональным категориям
-                  и удобным обзором лидеров года.
-                </p>
-
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <a
-                    href="#ranking-table"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
-                  >
-                    Смотреть таблицу
-                    <ChevronRight className="h-4 w-4" />
-                  </a>
-
-                  <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    На главную
-                  </Link>
-
-                  <a
-                    href="#university-profiles"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    Карточки вузов
-                  </a>
-                </div>
+              <a
+                href="#university-profiles"
+                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white"
+              >
+                Карточки вузов
+              </a>
+            </>
+          }
+          aside={
+            <div className="space-y-4 lg:ml-auto lg:max-w-md">
+              <div className="grid grid-cols-2 gap-3">
+                <RankingHeroStat label="Записей" value={ratings.length} valueClassName="text-3xl" />
+                <RankingHeroStat label="Категорий" value={categories.length} valueClassName="text-3xl" />
               </div>
 
-              <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 backdrop-blur">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Записей</div>
-                    <div className="mt-3 text-4xl font-semibold">{ratings.length}</div>
+              <RankingHeroPanel className="rounded-[1.75rem] p-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-300/70">
+                  Лучший балл
+                </div>
+                <div className="mt-3 text-4xl font-semibold text-white">
+                  {topScore ? formatScore(topScore) : "0.00"}
+                </div>
+                <p className="mt-3 text-sm leading-6 text-blue-100/65">
+                  Текущий срез по выбранному году помогает быстро оценить масштаб публикации и верхнюю планку рейтинга.
+                </p>
+              </RankingHeroPanel>
+            </div>
+          }
+        />
+
+        <main className="mx-auto max-w-7xl px-6 py-12">
+          <section className="overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-slate-200">
+            <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.14),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.10),transparent_30%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-6 md:p-8">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-8 top-8 h-32 w-32 rounded-full bg-blue-200/40 blur-3xl" />
+                <div className="absolute bottom-0 right-0 h-40 w-40 rounded-full bg-blue-100/50 blur-3xl" />
+              </div>
+
+              <div className="relative">
+                <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+                  <div className="max-w-3xl">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-blue-600/20">
+                      <Filter className="h-4 w-4" />
+                      Фильтр рейтинга
+                    </div>
+
+                    <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+                      Быстрый срез по институциональному рейтингу
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+                      Выберите год, категорию и нужный университет в верхней части страницы. Лидеры, таблица и карточки
+                      ниже автоматически перестраиваются под текущий фильтр.
+                    </p>
                   </div>
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Категорий</div>
-                    <div className="mt-3 text-4xl font-semibold">{Math.max(categories.length - 1, 0)}</div>
+
+                  <div className="grid gap-3 sm:grid-cols-3 xl:w-[440px]">
+                    <div className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-white/70 backdrop-blur">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Показано вузов
+                      </div>
+                      <div className="mt-2 text-3xl font-semibold text-slate-950">{ratingCount}</div>
+                    </div>
+
+                    <div className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-white/70 backdrop-blur">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Категорий
+                      </div>
+                      <div className="mt-2 text-3xl font-semibold text-slate-950">{categories.length}</div>
+                    </div>
+
+                    <div className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-white/70 backdrop-blur">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Год
+                      </div>
+                      <div className="mt-2 text-3xl font-semibold text-slate-950">{ratingYear ?? "—"}</div>
+                    </div>
                   </div>
-                  <div className="col-span-2 rounded-3xl bg-white/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-blue-100">Лучший балл</div>
-                    <div className="mt-3 text-4xl font-semibold">{topScore ? formatScore(topScore) : "0.00"}</div>
+                </div>
+
+                <div className="mt-8 grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
+                  {availableYears.length > 0 ? (
+                    <div className="rounded-[1.5rem] bg-white/80 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur">
+                      <div className="text-sm font-medium text-slate-700">Год рейтинга</div>
+                      <p className="mt-1 text-sm text-slate-500">Переключает публикацию и обновляет весь список.</p>
+
+                      <select
+                        aria-label="Выберите год рейтинга"
+                        value={ratingYear ?? ""}
+                        onChange={handleYearChange}
+                        className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                      >
+                        {availableYears.map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-[1.5rem] bg-white/80 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur">
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+                      <div>
+                        <div className="text-sm font-medium text-slate-700">Категории вузов</div>
+                        <p className="mt-1 text-sm text-slate-500">Выберите профиль, чтобы сравнивать университеты внутри одной группы.</p>
+                      </div>
+
+                      <div>
+                        <label htmlFor="university-search-top" className="mb-2 block text-sm font-medium text-slate-700">
+                          Поиск по названию
+                        </label>
+                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                          <Search className="h-4 w-4 text-slate-400" />
+                          <input
+                            id="university-search-top"
+                            type="search"
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                            placeholder="Например, Satbayev University"
+                            className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      {categories.map((category) => {
+                        const isActive = selectedCategory === category;
+
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => setSelectedCategory(category)}
+                            className={`rounded-full px-4 py-2.5 text-sm font-medium transition ${
+                              isActive
+                                ? "bg-[#0d2b6b] text-white shadow-lg shadow-blue-950/15"
+                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        <main className="mx-auto max-w-7xl px-6 py-12">
-          <section className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <aside className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          </section>
+          <section className="mt-10">
+            <aside className="hidden rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl bg-blue-50 p-3 text-blue-700">
                   <Filter className="h-5 w-5" />
@@ -181,7 +319,31 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              {availableYears.length > 0 ? (
+                <>
+                  <div className="mt-6">
+                    <div className="text-sm font-medium text-slate-700">Год рейтинга</div>
+                    <p className="mt-1 text-sm text-slate-500">Выберите публикацию за нужный год.</p>
+                  </div>
+
+                  <div className="mt-4">
+                    <select
+                      aria-label="Выберите год рейтинга"
+                      value={ratingYear ?? ""}
+                      onChange={handleYearChange}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-100"
+                    >
+                      {availableYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              ) : null}
+
+              <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-200 pt-6">
                 {categories.map((category) => {
                   const isActive = selectedCategory === category;
 
@@ -196,7 +358,7 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                     >
-                      {category === "all" ? "Все категории" : category}
+                      {category}
                     </button>
                   );
                 })}
@@ -251,7 +413,7 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                       <div
                         className="h-44 bg-cover bg-center"
                         style={{
-                          backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.12), rgba(15,23,42,0.78)), url('${getUniversityImage(
+                          backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.5), rgb(16 16 16 / 15%)),  url('${getUniversityImage(
                             rating.university?.id,
                           )}')`,
                         }}
@@ -266,6 +428,15 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                             <h3 className="mt-3 text-xl font-semibold leading-snug">
                               {rating.university?.current_name ?? "Университет не указан"}
                             </h3>
+                            {getUniversityProfileHref(rating.university?.id, ratingYear) ? (
+                              <Link
+                                href={getUniversityProfileHref(rating.university?.id, ratingYear)!}
+                                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-100 transition hover:text-white"
+                              >
+                                Страница вуза
+                                <ArrowUpRight className="h-4 w-4" />
+                              </Link>
+                            ) : null}
                           </div>
 
                           <div className="rounded-full bg-white/10 px-4 py-2 text-lg font-semibold">#{rating.rank}</div>
@@ -286,6 +457,15 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                           <div className="rounded-2xl bg-white/10 p-3 text-blue-200">
                             <Trophy className="h-5 w-5" />
                           </div>
+                          {getUniversityProfileHref(rating.university?.id, ratingYear) ? (
+                            <Link
+                              href={getUniversityProfileHref(rating.university?.id, ratingYear)!}
+                              className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-900"
+                            >
+                              Профиль вуза
+                              <ArrowUpRight className="h-4 w-4" />
+                            </Link>
+                          ) : null}
                         </div>
                       </div>
                     </article>
@@ -304,7 +484,7 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
               <div>
                 <div className="text-sm font-medium uppercase tracking-[0.24em] text-blue-700">Таблица рейтинга</div>
                 <h2 className="mt-2 text-3xl font-semibold text-slate-950">
-                  {selectedCategory === "all" ? "Все категории" : selectedCategory}
+                  {selectedCategory || "Категория не выбрана"}
                 </h2>
               </div>
 
@@ -342,6 +522,15 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
                           <div className="truncate text-base font-semibold text-slate-950">
                             {rating.university?.current_name ?? "Университет не указан"}
                           </div>
+                          {getUniversityProfileHref(rating.university?.id, ratingYear) ? (
+                            <Link
+                              href={getUniversityProfileHref(rating.university?.id, ratingYear)!}
+                              className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-900"
+                            >
+                              Профиль вуза
+                              <ArrowUpRight className="h-4 w-4" />
+                            </Link>
+                          ) : null}
                           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
                             <GraduationCap className="h-4 w-4" />
                             {ratingYear ? `Рейтинг ${ratingYear} года` : "Рейтинг IQAA"}
@@ -384,7 +573,11 @@ export default function IQAARanking({ ratingYear, ratings = [], universityProfil
             <div className="mt-8 grid gap-6 xl:grid-cols-2">
               {filteredProfiles.length > 0 ? (
                 filteredProfiles.map((profile) => (
-                  <UniversityProfileCard key={profile.id ?? profile.currentName} profile={profile} />
+                  <UniversityProfileCard
+                    key={profile.id ?? profile.currentName}
+                    profile={profile}
+                    detailsHref={getUniversityProfileHref(profile.id, ratingYear)}
+                  />
                 ))
               ) : (
                 <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-slate-500 xl:col-span-2">

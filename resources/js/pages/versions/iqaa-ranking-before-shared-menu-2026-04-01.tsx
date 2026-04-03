@@ -1,7 +1,7 @@
 import { Head, Link } from "@inertiajs/react";
 import { Award, Building2, ChevronRight, Filter, GraduationCap, Search, Trophy } from "lucide-react";
 import { useState } from "react";
-import MediaCoverage from "@/components/media/media-coverage";
+import MediaCoverage from "@/components/media/versions/media-coverage1";
 import UniversityProfileCard, { type UniversityProfile } from "@/components/universities/university-profile-card";
 
 type Rating = {

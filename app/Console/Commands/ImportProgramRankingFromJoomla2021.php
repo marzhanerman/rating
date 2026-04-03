@@ -499,7 +499,7 @@ class ImportProgramRankingFromJoomla2021 extends Command
                         ],
                         [
                             'rank' => $rank,
-                            'score' => (float) str_replace(',', '.', $score),
+                            'total_score' => (float) str_replace(',', '.', $score),
                             'programs' => $programs,
                         ]
                     );

@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Models\University;
-use App\Models\Ranking;
 use App\Http\Controllers\InstitutionalImportController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InstitutionalRankingController;
 use App\Http\Controllers\ProgramRankingController;
 use App\Http\Controllers\WebsiteRankingController;
 
@@ -21,70 +21,24 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/ranking', function () {
-    $latestYear = Ranking::query()
-        ->where('level_type', 'institutional')
-        ->max('year');
-
-    $ratings = $latestYear
-        ? Ranking::with('university')
-            ->where('level_type', 'institutional')
-            ->where('year', $latestYear)
-            ->orderBy('rank')
-            ->get()
-        : collect();
-
-    $historyByUniversity = $ratings->isNotEmpty()
-        ? Ranking::query()
-            ->where('level_type', 'institutional')
-            ->whereIn('university_id', $ratings->pluck('university_id')->filter()->unique())
-            ->orderBy('year')
-            ->get(['university_id', 'year', 'rank', 'total_score'])
-            ->groupBy('university_id')
-            ->map(function ($items) {
-                return $items
-                    ->groupBy('year')
-                    ->map(function ($yearItems) {
-                        $entry = $yearItems->sortBy('rank')->first();
-
-                        return [
-                            'year' => (int) $entry->year,
-                            'rank' => (int) $entry->rank,
-                            'totalScore' => (float) $entry->total_score,
-                        ];
-                    })
-                    ->values();
-            })
-        : collect();
-
-    $universityProfiles = $ratings->map(function ($rating) use ($historyByUniversity) {
-        $university = $rating->university;
-
-        return [
-            'id' => $university?->id,
-            'currentName' => $university?->current_name,
-            'city' => $university?->city,
-            'status' => $university?->status,
-            'currentRank' => (int) $rating->rank,
-            'currentScore' => (float) $rating->total_score,
-            'institutionalCategory' => $rating->institutional_category,
-            'website' => null,
-            'rector' => null,
-            'address' => null,
-            'foundedYear' => null,
-            'studentCount' => null,
-            'history' => $historyByUniversity->get($rating->university_id, []),
-        ];
-    })->values();
-
-    return Inertia::render('iqaa_ranking', [
-        'ratingYear' => $latestYear,
-        'ratings' => $ratings,
-        'universityProfiles' => $universityProfiles,
-    ]);
+Route::get('/test1', function () {
+    return Inertia::render('test/iqaa_ranking_mockup_react-2');
 });
+Route::get('/test2', function () {
+    return Inertia::render('test/iqaa_university_profile_page');
+});
+Route::get('/test-university-card', function () {
+    return Inertia::render('test/university-card');
+});
+Route::get('/test-ranking', function () {
+    return Inertia::render('test/university_ranking_presentation_template');
+});
+Route::get('/ranking', [InstitutionalRankingController::class, 'index']);
+Route::get('/ranking/university/{university}', [InstitutionalRankingController::class, 'show']);
+Route::get('/ranking-v2', [InstitutionalRankingController::class, 'variantTwo']);
+Route::get('/ranking-v2/university/{university}', [InstitutionalRankingController::class, 'showVariantTwo']);
 Route::get('/program-ranking', [ProgramRankingController::class, 'index']);
+Route::get('/program-ranking-v2', [ProgramRankingController::class, 'variantTwo']);
 Route::get('/website-ranking', [WebsiteRankingController::class, 'index']);
 Route::get('/methodology', function () {
     return Inertia::render('methodology');
