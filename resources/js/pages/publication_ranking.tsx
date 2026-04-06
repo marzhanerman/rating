@@ -1,18 +1,21 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowUpRight,
+    BookOpenText,
+    Building2,
     ChevronRight,
     Cpu,
-    ExternalLink,
-    Globe,
+    FileText,
     GraduationCap,
     Layers3,
     LayoutGrid,
+    MapPin,
     Palette,
     Scale,
     Search,
     Sparkles,
     Stethoscope,
+    Trophy,
     Waypoints,
     type LucideIcon,
 } from 'lucide-react';
@@ -23,39 +26,41 @@ import RankingHero, {
     RankingHeroStat,
 } from '@/components/hero/ranking-hero';
 
-type MetricColumn = { key: string; label: string };
-type Criterion = { key: string | null; title: string; points: number | null };
-type Methodology = {
+type Criterion = {
+    number: string | null;
     title: string;
-    intro: string[];
-    criteria: Criterion[];
-} | null;
+    points: number | null;
+};
 
 type RankingRow = {
-    id: string;
+    id: number;
     place: number;
     universityName: string;
-    websiteUrl?: string | null;
-    totalScore: number | null;
-    metrics: Record<string, number | null>;
+    city?: string | null;
+    universityId?: number | null;
+    total: number | null;
 };
 
 type RankingCategory = {
     key: string;
     label: string;
+    themeKey: string;
     entryCount: number;
     topScore: number | null;
     rows: RankingRow[];
 };
+
+type Methodology = {
+    title: string;
+    criteria: Criterion[];
+} | null;
 
 type SelectedRating = {
     year: number;
     title: string;
     entryCount: number;
     categoryCount: number;
-    metricCount: number;
     topScore: number | null;
-    metricColumns: MetricColumn[];
     categories: RankingCategory[];
     methodology: Methodology;
 } | null;
@@ -64,11 +69,9 @@ type YearOption = {
     year: number;
     entryCount: number;
     categoryCount: number;
-    metricCount: number;
-    hasMethodology: boolean;
-    hasDetailedMetrics: boolean;
     topScore: number | null;
-    modeLabel: string;
+    hasMethodology: boolean;
+    criteriaCount: number;
 };
 
 type Props = {
@@ -77,60 +80,21 @@ type Props = {
     yearOptions?: YearOption[];
 };
 
-type CategoryRow = RankingRow & {
-    categoryKey: string;
-    categoryLabel: string;
-};
-
-type MetricFocusOption = {
-    key: string;
-    label: string;
-    title: string;
-    points: number | null;
-};
-
 type CategoryMeta = {
     icon: LucideIcon;
-    badgeClassName: string;
+    chipClassName: string;
     ringClassName: string;
     shadowClassName: string;
     surface: string;
 };
 
-type CategorySummary = {
-    key: string;
-    label: string;
-    entryCount: number;
-    topScore: number | null;
-    rows: CategoryRow[];
-    websitesCount: number;
-    leader: CategoryRow | null;
-    meta: CategoryMeta;
-};
-
-const formatScore = (value: number | null) =>
-    value === null ? 'н/д' : value.toFixed(2);
-
-const getDomainLabel = (url?: string | null) => {
-    if (!url) return 'Ссылка не указана';
-
-    try {
-        return new URL(url).hostname.replace(/^www\./, '');
-    } catch {
-        return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
-    }
-};
-
-const compareRows = (left: RankingRow, right: RankingRow) => {
-    if (left.place !== right.place) return left.place - right.place;
-
-    return left.universityName.localeCompare(right.universityName, 'ru-RU');
-};
+const EMPTY_CATEGORIES: RankingCategory[] = [];
+const EMPTY_CRITERIA: Criterion[] = [];
 
 const categoryMetaMap: Record<string, CategoryMeta> = {
-    multidisciplinary: {
+    multi: {
         icon: Layers3,
-        badgeClassName: 'bg-blue-50 text-blue-700',
+        chipClassName: 'bg-blue-50 text-blue-700 ring-blue-200',
         ringClassName: 'ring-blue-200/80',
         shadowClassName: 'shadow-blue-200/70',
         surface:
@@ -138,74 +102,89 @@ const categoryMetaMap: Record<string, CategoryMeta> = {
     },
     technical: {
         icon: Cpu,
-        badgeClassName: 'bg-cyan-50 text-cyan-700',
+        chipClassName: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
         ringClassName: 'ring-cyan-200/80',
         shadowClassName: 'shadow-cyan-200/70',
         surface:
             'linear-gradient(135deg, #0f766e 0%, #0891b2 48%, #164e63 100%)',
     },
-    'humanitarian-economic': {
+    humanitarian: {
         icon: Scale,
-        badgeClassName: 'bg-amber-50 text-amber-700',
+        chipClassName: 'bg-amber-50 text-amber-700 ring-amber-200',
         ringClassName: 'ring-amber-200/80',
         shadowClassName: 'shadow-amber-200/70',
         surface:
             'linear-gradient(135deg, #b45309 0%, #f59e0b 48%, #7c2d12 100%)',
     },
-    medical: {
-        icon: Stethoscope,
-        badgeClassName: 'bg-emerald-50 text-emerald-700',
-        ringClassName: 'ring-emerald-200/80',
-        shadowClassName: 'shadow-emerald-200/70',
-        surface:
-            'linear-gradient(135deg, #047857 0%, #10b981 45%, #064e3b 100%)',
-    },
     pedagogical: {
         icon: GraduationCap,
-        badgeClassName: 'bg-sky-50 text-sky-700',
+        chipClassName: 'bg-sky-50 text-sky-700 ring-sky-200',
         ringClassName: 'ring-sky-200/80',
         shadowClassName: 'shadow-sky-200/70',
         surface:
             'linear-gradient(135deg, #0f766e 0%, #38bdf8 50%, #1e3a8a 100%)',
     },
-    arts: {
+    medical: {
+        icon: Stethoscope,
+        chipClassName: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+        ringClassName: 'ring-emerald-200/80',
+        shadowClassName: 'shadow-emerald-200/70',
+        surface:
+            'linear-gradient(135deg, #047857 0%, #10b981 45%, #064e3b 100%)',
+    },
+    creative: {
         icon: Palette,
-        badgeClassName: 'bg-rose-50 text-rose-700',
+        chipClassName: 'bg-rose-50 text-rose-700 ring-rose-200',
         ringClassName: 'ring-rose-200/80',
         shadowClassName: 'shadow-rose-200/70',
         surface:
             'linear-gradient(135deg, #be185d 0%, #fb7185 48%, #7c2d12 100%)',
     },
+    overall: {
+        icon: LayoutGrid,
+        chipClassName: 'bg-slate-100 text-slate-700 ring-slate-200',
+        ringClassName: 'ring-slate-200/80',
+        shadowClassName: 'shadow-slate-200/70',
+        surface:
+            'linear-gradient(135deg, #334155 0%, #475569 48%, #0f172a 100%)',
+    },
 };
 
-const fallbackCategoryMeta: CategoryMeta = {
-    icon: LayoutGrid,
-    badgeClassName: 'bg-slate-100 text-slate-700',
-    ringClassName: 'ring-slate-200/80',
-    shadowClassName: 'shadow-slate-200/70',
-    surface: 'linear-gradient(135deg, #334155 0%, #475569 48%, #0f172a 100%)',
+const featuredThemes = [
+    'from-amber-300 via-orange-400 to-pink-400',
+    'from-cyan-300 via-sky-400 to-blue-400',
+    'from-violet-300 via-fuchsia-400 to-rose-400',
+] as const;
+
+const getCategoryMeta = (themeKey: string) =>
+    categoryMetaMap[themeKey] ?? categoryMetaMap.overall;
+
+const formatScore = (value: number | null) =>
+    value === null ? 'н/д' : value.toFixed(2);
+
+const getUniversityImage = (universityId?: number | null) =>
+    universityId ? `/storage/images/universities/${universityId}.jpg` : '';
+
+const getUniversityProfileHref = (universityId?: number | null) =>
+    universityId ? `/ranking/university/${universityId}` : undefined;
+
+const compareRows = (left: RankingRow, right: RankingRow) => {
+    if (left.place !== right.place) return left.place - right.place;
+
+    return left.universityName.localeCompare(right.universityName, 'ru-RU');
 };
 
-const EMPTY_CATEGORIES: RankingCategory[] = [];
-const EMPTY_METRIC_COLUMNS: MetricColumn[] = [];
-
-const getCategoryMeta = (key: string) =>
-    categoryMetaMap[key] ?? fallbackCategoryMeta;
-
-export default function WebsiteRankingPage({
+export default function PublicationRankingPage({
     selectedYear,
     selectedRating = null,
     yearOptions = [],
 }: Props) {
     const categories = selectedRating?.categories ?? EMPTY_CATEGORIES;
     const methodology = selectedRating?.methodology ?? null;
-    const metricColumns = selectedRating?.metricColumns ?? EMPTY_METRIC_COLUMNS;
+    const criteria = methodology?.criteria ?? EMPTY_CRITERIA;
 
     const [selectedCategoryKey, setSelectedCategoryKey] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [focusedMetricKey, setFocusedMetricKey] = useState<string | null>(
-        null,
-    );
 
     const deferredQuery = useDeferredValue(
         searchQuery.trim().toLocaleLowerCase('ru-RU'),
@@ -217,175 +196,111 @@ export default function WebsiteRankingPage({
         [selectedYear, yearOptions],
     );
 
-    const metricOptions = useMemo<MetricFocusOption[]>(() => {
-        const criteriaByKey = new Map(
-            (methodology?.criteria ?? [])
-                .filter((criterion): criterion is Criterion & { key: string } =>
-                    Boolean(criterion.key),
-                )
-                .map((criterion) => [criterion.key, criterion]),
-        );
-
-        return metricColumns.map((metricColumn) => {
-            const criterion = criteriaByKey.get(metricColumn.key);
-
-            return {
-                key: metricColumn.key,
-                label: metricColumn.label,
-                title: criterion?.title ?? metricColumn.label,
-                points: criterion?.points ?? null,
-            };
-        });
-    }, [metricColumns, methodology]);
-
-    const methodologyNotes = useMemo(
-        () =>
-            (methodology?.criteria ?? []).filter(
-                (criterion) =>
-                    !criterion.key ||
-                    !metricOptions.some((item) => item.key === criterion.key),
-            ),
-        [methodology, metricOptions],
-    );
-
-    const categorySummaries = useMemo<CategorySummary[]>(
-        () =>
-            categories.map((category) => {
-                const rows = [...category.rows]
-                    .sort(compareRows)
-                    .map((row) => ({
-                        ...row,
-                        categoryKey: category.key,
-                        categoryLabel: category.label,
-                    }));
-
-                return {
-                    key: category.key,
-                    label: category.label,
-                    entryCount: category.entryCount,
-                    topScore: category.topScore,
-                    rows,
-                    websitesCount: rows.filter((row) => Boolean(row.websiteUrl))
-                        .length,
-                    leader: rows[0] ?? null,
-                    meta: getCategoryMeta(category.key),
-                };
-            }),
-        [categories],
-    );
-
     const resolvedCategoryKey = useMemo(() => {
         if (
             selectedCategoryKey &&
-            categorySummaries.some(
-                (category) => category.key === selectedCategoryKey,
-            )
+            categories.some((category) => category.key === selectedCategoryKey)
         ) {
             return selectedCategoryKey;
         }
 
-        return categorySummaries[0]?.key ?? '';
-    }, [categorySummaries, selectedCategoryKey]);
-
-    const resolvedMetricKey = useMemo(() => {
-        if (
-            focusedMetricKey &&
-            metricOptions.some(
-                (metricOption) => metricOption.key === focusedMetricKey,
-            )
-        ) {
-            return focusedMetricKey;
-        }
-
-        return metricOptions[0]?.key ?? null;
-    }, [focusedMetricKey, metricOptions]);
+        return categories[0]?.key ?? '';
+    }, [categories, selectedCategoryKey]);
 
     const activeCategory = useMemo(
         () =>
-            categorySummaries.find(
+            categories.find(
                 (category) => category.key === resolvedCategoryKey,
             ) ??
-            categorySummaries[0] ??
+            categories[0] ??
             null,
-        [categorySummaries, resolvedCategoryKey],
+        [categories, resolvedCategoryKey],
     );
 
     const visibleRows = useMemo(() => {
-        const baseRows = activeCategory?.rows ?? [];
+        const baseRows = [...(activeCategory?.rows ?? [])].sort(compareRows);
 
         if (!deferredQuery) {
             return baseRows;
         }
 
-        return baseRows.filter((row) => {
-            const haystack = [
-                row.universityName,
-                row.categoryLabel,
-                row.websiteUrl ?? '',
-                getDomainLabel(row.websiteUrl),
-            ]
+        return baseRows.filter((row) =>
+            [row.universityName, row.city ?? '']
                 .join(' ')
-                .toLocaleLowerCase('ru-RU');
-
-            return haystack.includes(deferredQuery);
-        });
+                .toLocaleLowerCase('ru-RU')
+                .includes(deferredQuery),
+        );
     }, [activeCategory, deferredQuery]);
 
-    const highlightedMetric = useMemo(
+    const categoryCards = useMemo(
         () =>
-            metricOptions.find(
-                (metricOption) => metricOption.key === resolvedMetricKey,
-            ) ?? null,
-        [metricOptions, resolvedMetricKey],
+            categories.map((category) => ({
+                ...category,
+                leader: [...category.rows].sort(compareRows)[0] ?? null,
+                meta: getCategoryMeta(category.themeKey),
+            })),
+        [categories],
     );
 
     const leaders = visibleRows.slice(0, 3);
-    const websitesCount = visibleRows.filter((row) =>
-        Boolean(row.websiteUrl),
-    ).length;
-
     const bestVisibleScore = useMemo(() => {
         const scores = visibleRows
-            .map((row) => row.totalScore)
+            .map((row) => row.total)
             .filter((value): value is number => value !== null);
 
         return scores.length > 0 ? Math.max(...scores) : null;
     }, [visibleRows]);
+
+    const totalMethodologyPoints = useMemo(
+        () =>
+            criteria.reduce(
+                (sum, criterion) => sum + (criterion.points ?? 0),
+                0,
+            ),
+        [criteria],
+    );
 
     const archiveRange =
         yearOptions.length > 0
             ? `${yearOptions[yearOptions.length - 1]?.year}-${yearOptions[0]?.year}`
             : `${selectedYear}`;
 
-    const ActiveCategoryIcon = activeCategory?.meta.icon ?? LayoutGrid;
-    const isMultiCategoryYear = categories.length > 1;
+    const activeCategoryMeta = getCategoryMeta(
+        activeCategory?.themeKey ?? 'overall',
+    );
+    const ActiveCategoryIcon = activeCategoryMeta.icon;
+    const hasCities = visibleRows.some((row) => Boolean(row.city));
+    const hasMultipleCategories = categories.length > 1;
+    const visibleShare = activeCategory?.entryCount
+        ? Math.round((visibleRows.length / activeCategory.entryCount) * 100)
+        : 0;
 
     return (
         <>
-            <Head title={`Рейтинг сайтов вузов - ${selectedYear}`} />
+            <Head title={`Рейтинг публикаций - ${selectedYear}`} />
 
             <div className="min-h-screen bg-[#0a1530]">
                 <RankingHero
-                    currentPath="/website-ranking"
+                    currentPath="/publication-ranking"
                     badge={
                         <>
-                            <Globe className="h-4 w-4 text-blue-300" />
-                            Архив рейтинга сайтов {archiveRange}
+                            <FileText className="h-4 w-4 text-blue-300" />
+                            Архив рейтинга публикаций {archiveRange}
                         </>
                     }
-                    title="Рейтинг веб-сайтов вузов Казахстана"
-                    description="Страница собрана по логике второй версии рейтингов: сначала выбираем год публикации, затем профиль вуза, потом фокусируемся на метрике и сразу видим лидеров и полную таблицу."
+                    title="Рейтинг вузов по научным публикациям"
+                    description="Новая вкладка собирает выпуски рейтинга научных публикаций в одном экране: год публикации, профиль выпуска, лидеры, методология и полная таблица результатов."
                     actions={
                         <>
                             <a
-                                href="#website-controls"
+                                href="#publication-controls"
                                 className="btn-orange inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
                             >
                                 Открыть навигатор
                                 <ChevronRight className="h-4 w-4" />
                             </a>
                             <a
-                                href="#website-ranking-table"
+                                href="#publication-table"
                                 className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white"
                             >
                                 Смотреть таблицу
@@ -411,33 +326,26 @@ export default function WebsiteRankingPage({
                                     valueClassName="text-3xl"
                                 />
                                 <RankingHeroStat
-                                    label="Метрик"
-                                    value={selectedRating?.metricCount ?? 0}
+                                    label="Критериев"
+                                    value={criteria.length}
                                     valueClassName="text-3xl"
                                 />
                             </div>
 
                             <RankingHeroPanel className="rounded-[1.75rem] p-5">
                                 <div className="text-[11px] font-semibold tracking-[0.16em] text-blue-300/70 uppercase">
-                                    Формат текущего года
+                                    Лучший балл выпуска
                                 </div>
-                                <div className="mt-3 text-2xl font-semibold text-white">
-                                    {selectedYearMeta?.modeLabel ??
-                                        'Архивный выпуск'}
+                                <div className="mt-3 text-3xl font-semibold text-white">
+                                    {formatScore(
+                                        selectedRating?.topScore ?? null,
+                                    )}
                                 </div>
                                 <p className="mt-3 text-sm leading-6 text-blue-100/65">
-                                    {isMultiCategoryYear
-                                        ? 'В выбранном году рейтинг опубликован по отдельным профилям вузов, поэтому навигация начинается с выбора категории.'
-                                        : 'В выбранном году рейтинг опубликован единым списком, поэтому акцент сделан на поиске, метриках и лидерах таблицы.'}
+                                    {selectedYearMeta?.hasMethodology
+                                        ? 'Для выбранного года доступна методология с критериями оценки публикационной активности.'
+                                        : 'Для выбранного года сохранена таблица результатов, но методология в архиве не найдена.'}
                                 </p>
-                                <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-blue-100/80">
-                                    Методология:{' '}
-                                    <span className="font-semibold text-white">
-                                        {selectedYearMeta?.hasMethodology
-                                            ? 'доступна'
-                                            : 'не найдена'}
-                                    </span>
-                                </div>
                             </RankingHeroPanel>
                         </div>
                     }
@@ -451,7 +359,7 @@ export default function WebsiteRankingPage({
 
                     <main className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
                         <section
-                            id="website-controls"
+                            id="publication-controls"
                             className="rounded-[2rem] border border-gray-200/60 bg-white p-6 shadow-xl shadow-gray-200/50"
                         >
                             <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
@@ -460,25 +368,25 @@ export default function WebsiteRankingPage({
                                         Навигатор архива
                                     </div>
                                     <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
-                                        Год, профиль и критерий в одном экране
+                                        Год, категория и публикационный лидер на
+                                        одном экране
                                     </h2>
                                     <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
-                                        Логика страницы теперь построена как в
-                                        версиях `v2`: сначала выбираем выпуск,
-                                        затем активную категорию, после этого
-                                        переключаем метрику и сразу читаем
-                                        лидеров и полную таблицу.
+                                        Логика страницы повторяет визуальный
+                                        подход `v2`: сначала выбираем выпуск,
+                                        затем профиль рейтинга, после чего сразу
+                                        видим методологию, лидеров и полную
+                                        таблицу результатов.
                                     </p>
                                 </div>
 
                                 <div className="grid gap-3 sm:grid-cols-3 xl:w-[420px]">
                                     <div className="rounded-[1.5rem] bg-slate-50 p-4">
                                         <div className="text-xs tracking-[0.22em] text-slate-500 uppercase">
-                                            Вид выпуска
+                                            Диапазон архива
                                         </div>
                                         <div className="mt-2 text-lg font-semibold text-slate-950">
-                                            {selectedYearMeta?.modeLabel ??
-                                                'Архив'}
+                                            {archiveRange}
                                         </div>
                                     </div>
 
@@ -496,10 +404,12 @@ export default function WebsiteRankingPage({
 
                                     <div className="rounded-[1.5rem] bg-slate-50 p-4">
                                         <div className="text-xs tracking-[0.22em] text-slate-500 uppercase">
-                                            Диапазон архива
+                                            Методология
                                         </div>
                                         <div className="mt-2 text-lg font-semibold text-slate-950">
-                                            {archiveRange}
+                                            {selectedYearMeta?.hasMethodology
+                                                ? `${selectedYearMeta.criteriaCount} критериев`
+                                                : 'Архив без методики'}
                                         </div>
                                     </div>
                                 </div>
@@ -518,7 +428,7 @@ export default function WebsiteRankingPage({
                                                     type="button"
                                                     onClick={() =>
                                                         router.get(
-                                                            '/website-ranking',
+                                                            '/publication-ranking',
                                                             {
                                                                 year: option.year,
                                                             },
@@ -541,13 +451,13 @@ export default function WebsiteRankingPage({
                                         </div>
                                     </div>
 
-                                    {isMultiCategoryYear ? (
+                                    {hasMultipleCategories ? (
                                         <div>
                                             <div className="mb-3 text-sm font-medium text-slate-700">
                                                 Активная категория
                                             </div>
                                             <div className="flex flex-wrap gap-2">
-                                                {categorySummaries.map(
+                                                {categoryCards.map(
                                                     (category) => {
                                                         const CategoryIcon =
                                                             category.meta.icon;
@@ -603,7 +513,7 @@ export default function WebsiteRankingPage({
                                                         event.target.value,
                                                     )
                                                 }
-                                                placeholder="Поиск по вузу или домену"
+                                                placeholder="Поиск по вузу или городу"
                                                 className="w-full rounded-2xl border border-gray-200/70 bg-gray-50 py-3 pr-4 pl-11 text-sm text-gray-700 transition-all outline-none placeholder:text-gray-400 focus:border-blue-300 focus:ring-2 focus:ring-blue-500/20"
                                             />
                                         </div>
@@ -616,58 +526,21 @@ export default function WebsiteRankingPage({
                                                         {activeCategory.label}
                                                     </span>
                                                     . Поиск и таблица работают
-                                                    внутри выбранной категории.
+                                                    только внутри выбранной
+                                                    категории.
                                                 </>
                                             ) : (
                                                 'Выберите год публикации, чтобы открыть архив.'
                                             )}
                                         </div>
                                     </div>
-
-                                    {metricOptions.length > 0 ? (
-                                        <div>
-                                            <div className="mb-3 text-sm font-medium text-slate-700">
-                                                Фокус по метрике
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {metricOptions.map(
-                                                    (metricOption) => (
-                                                        <button
-                                                            key={
-                                                                metricOption.key
-                                                            }
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setFocusedMetricKey(
-                                                                    metricOption.key,
-                                                                )
-                                                            }
-                                                            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                                                                resolvedMetricKey ===
-                                                                metricOption.key
-                                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                                            }`}
-                                                        >
-                                                            {metricOption.key}
-                                                            {metricOption.points !==
-                                                            null
-                                                                ? ` · ${formatScore(metricOption.points)}`
-                                                                : ''}
-                                                        </button>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
-                                    ) : null}
                                 </div>
 
                                 <div
                                     className="rounded-[1.75rem] p-5 text-white shadow-xl shadow-blue-950/10"
                                     style={{
                                         backgroundImage:
-                                            activeCategory?.meta.surface ??
-                                            'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0f172a 100%)',
+                                            activeCategoryMeta.surface,
                                     }}
                                 >
                                     <div className="text-[11px] font-semibold tracking-[0.18em] text-blue-100/70 uppercase">
@@ -680,9 +553,9 @@ export default function WebsiteRankingPage({
                                                 {selectedYear}
                                             </div>
                                             <p className="mt-2 text-sm leading-6 text-blue-100/75">
-                                                {selectedYearMeta?.hasDetailedMetrics
-                                                    ? 'Выпуск включает детальные критерии, поэтому можно переключать фокусную метрику.'
-                                                    : 'Выпуск опубликован без детальной разбивки по критериям, поэтому основной акцент сделан на итоговом балле.'}
+                                                {hasMultipleCategories
+                                                    ? 'В этом году рейтинг опубликован по отдельным профилям вузов, поэтому основной сценарий начинается с выбора категории.'
+                                                    : 'В этом году рейтинг опубликован единым списком, поэтому акцент сделан на лидерах, поиске и полном архиве результатов.'}
                                             </p>
                                         </div>
 
@@ -703,10 +576,10 @@ export default function WebsiteRankingPage({
 
                                         <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
                                             <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
-                                                Сайтов с ссылкой
+                                                Видимость
                                             </div>
                                             <div className="mt-2 text-2xl font-semibold">
-                                                {websitesCount}
+                                                {visibleShare}%
                                             </div>
                                         </div>
 
@@ -732,8 +605,7 @@ export default function WebsiteRankingPage({
                                 </div>
                             </div>
                         </section>
-
-                        {isMultiCategoryYear ? (
+                        {hasMultipleCategories ? (
                             <section className="mt-10">
                                 <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                                     <div>
@@ -741,22 +613,21 @@ export default function WebsiteRankingPage({
                                             Профили выпуска
                                         </div>
                                         <h2 className="mt-2 text-3xl font-semibold text-slate-950">
-                                            Категории работают как
-                                            карточки-навигация
+                                            Карточки категорий работают как
+                                            навигация
                                         </h2>
                                     </div>
 
                                     <div className="max-w-2xl text-sm leading-6 text-slate-500">
-                                        Блок визуально повторяет логику `v2`:
-                                        карточка показывает лидера категории,
-                                        число строк и лучший балл, а клик сразу
-                                        перестраивает таблицу и подборку
-                                        лидеров.
+                                        Каждая карточка показывает лидера
+                                        профиля, объем выборки и лучший балл.
+                                        Переключение сразу перестраивает блок
+                                        лидеров и таблицу ниже.
                                     </div>
                                 </div>
 
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                    {categorySummaries.map((category) => {
+                                    {categoryCards.map((category) => {
                                         const isActive =
                                             activeCategory?.key ===
                                             category.key;
@@ -794,7 +665,7 @@ export default function WebsiteRankingPage({
                                                             {
                                                                 category.entryCount
                                                             }{' '}
-                                                            строк
+                                                            вузов
                                                         </div>
                                                     </div>
 
@@ -806,9 +677,9 @@ export default function WebsiteRankingPage({
                                                         {formatScore(
                                                             category.topScore,
                                                         )}
-                                                        . Ссылок на сайты:{' '}
-                                                        {category.websitesCount}
-                                                        .
+                                                        . Лидер категории уже
+                                                        вынесен в отдельную
+                                                        карточку ниже.
                                                     </p>
                                                 </div>
 
@@ -838,14 +709,11 @@ export default function WebsiteRankingPage({
                                 </div>
                             </section>
                         ) : null}
-
                         <section className="mt-10 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
                             <aside
                                 className="rounded-[2rem] p-6 text-white shadow-2xl shadow-blue-950/10"
                                 style={{
-                                    backgroundImage:
-                                        activeCategory?.meta.surface ??
-                                        'linear-gradient(135deg, #1e293b 0%, #334155 55%, #0f172a 100%)',
+                                    backgroundImage: activeCategoryMeta.surface,
                                 }}
                             >
                                 <div className="text-[11px] font-semibold tracking-[0.18em] text-blue-100/70 uppercase">
@@ -861,14 +729,22 @@ export default function WebsiteRankingPage({
                                             {activeCategory?.label ?? 'Архив'}
                                         </h2>
                                         <p className="mt-1 text-sm text-blue-100/75">
-                                            {isMultiCategoryYear
-                                                ? 'Эта категория задает лидеров, поисковую выборку и полную таблицу.'
-                                                : 'Для этого года опубликован единый список, поэтому весь экран работает по одному архивному выпуску.'}
+                                            {selectedRating?.title ??
+                                                'Архивный выпуск рейтинга публикаций'}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                                    <div className="rounded-[1.35rem] border border-white/10 bg-white/10 p-4">
+                                        <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
+                                            В категории
+                                        </div>
+                                        <div className="mt-2 text-2xl font-semibold">
+                                            {activeCategory?.entryCount ?? 0}
+                                        </div>
+                                    </div>
+
                                     <div className="rounded-[1.35rem] border border-white/10 bg-white/10 p-4">
                                         <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
                                             В таблице
@@ -880,64 +756,74 @@ export default function WebsiteRankingPage({
 
                                     <div className="rounded-[1.35rem] border border-white/10 bg-white/10 p-4">
                                         <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
-                                            Метрик в выпуске
+                                            Критериев
                                         </div>
                                         <div className="mt-2 text-2xl font-semibold">
-                                            {metricOptions.length}
+                                            {criteria.length}
                                         </div>
                                     </div>
 
                                     <div className="rounded-[1.35rem] border border-white/10 bg-white/10 p-4">
                                         <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
-                                            Ссылок на сайты
+                                            Баллов в методике
                                         </div>
                                         <div className="mt-2 text-2xl font-semibold">
-                                            {websitesCount}
-                                        </div>
-                                    </div>
-
-                                    <div className="rounded-[1.35rem] border border-white/10 bg-white/10 p-4">
-                                        <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
-                                            Лучший балл
-                                        </div>
-                                        <div className="mt-2 text-2xl font-semibold">
-                                            {formatScore(bestVisibleScore)}
+                                            {formatScore(
+                                                totalMethodologyPoints,
+                                            )}
                                         </div>
                                     </div>
                                 </div>
 
-                                {activeCategory?.leader ? (
+                                {activeCategory?.rows[0] ? (
                                     <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/10 p-4">
                                         <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
                                             Лидер категории
                                         </div>
                                         <div className="mt-3 text-lg font-semibold">
                                             {
-                                                activeCategory.leader
+                                                activeCategory.rows[0]
                                                     .universityName
                                             }
                                         </div>
-                                        {activeCategory.leader.websiteUrl ? (
-                                            <a
-                                                href={
-                                                    activeCategory.leader
-                                                        .websiteUrl
-                                                }
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="mt-2 inline-flex items-center gap-2 text-sm text-blue-100 transition hover:text-white"
-                                            >
-                                                {getDomainLabel(
-                                                    activeCategory.leader
-                                                        .websiteUrl,
-                                                )}
-                                                <ArrowUpRight className="h-4 w-4" />
-                                            </a>
-                                        ) : (
-                                            <div className="mt-2 text-sm text-blue-100/70">
-                                                Ссылка на сайт не указана
+                                        {activeCategory.rows[0].city ? (
+                                            <div className="mt-2 inline-flex items-center gap-2 text-sm text-blue-100/80">
+                                                <MapPin className="h-4 w-4" />
+                                                {activeCategory.rows[0].city}
                                             </div>
-                                        )}
+                                        ) : null}
+                                        <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.2rem] border border-white/10 bg-white/5 px-4 py-3">
+                                            <div>
+                                                <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
+                                                    Итоговый балл
+                                                </div>
+                                                <div className="mt-1 text-2xl font-semibold">
+                                                    {formatScore(
+                                                        activeCategory.rows[0]
+                                                            .total,
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {getUniversityProfileHref(
+                                                activeCategory.rows[0]
+                                                    .universityId,
+                                            ) ? (
+                                                <Link
+                                                    href={
+                                                        getUniversityProfileHref(
+                                                            activeCategory
+                                                                .rows[0]
+                                                                .universityId,
+                                                        )!
+                                                    }
+                                                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+                                                >
+                                                    Профиль
+                                                    <ArrowUpRight className="h-4 w-4" />
+                                                </Link>
+                                            ) : null}
+                                        </div>
                                     </div>
                                 ) : null}
                             </aside>
@@ -945,155 +831,117 @@ export default function WebsiteRankingPage({
                             <div className="rounded-[2rem] border border-gray-200/70 bg-white p-6 shadow-xl shadow-gray-200/40">
                                 <div className="flex flex-col gap-3 border-b border-gray-200 pb-6 md:flex-row md:items-end md:justify-between">
                                     <div>
-                                        <div className="text-sm font-medium tracking-[0.24em] text-blue-700 uppercase">
+                                        <div className="inline-flex items-center gap-2 text-sm font-medium tracking-[0.24em] text-blue-700 uppercase">
+                                            <BookOpenText className="h-4 w-4" />
                                             Методология
                                         </div>
                                         <h2 className="mt-2 text-3xl font-semibold text-slate-950">
-                                            Как читается выбранная метрика
+                                            Как читать публикационный рейтинг
                                         </h2>
                                     </div>
 
                                     <div className="max-w-2xl text-sm leading-6 text-slate-500">
                                         {methodology?.title ??
-                                            'Для этого года методология в архиве не найдена, но итоговая таблица и переключение по метрикам продолжают работать.'}
+                                            'Для этого года методология в архиве не найдена, но таблица результатов и навигация по категориям остаются доступными.'}
                                     </div>
                                 </div>
 
-                                {metricOptions.length > 0 ? (
+                                {criteria.length > 0 ? (
                                     <div className="mt-8 space-y-6">
-                                        <div className="flex flex-wrap gap-2">
-                                            {metricOptions.map(
-                                                (metricOption) => (
-                                                    <button
-                                                        key={metricOption.key}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setFocusedMetricKey(
-                                                                metricOption.key,
-                                                            )
-                                                        }
-                                                        className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                                                            resolvedMetricKey ===
-                                                            metricOption.key
-                                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                                        }`}
-                                                    >
-                                                        {metricOption.key}
-                                                        {metricOption.points !==
-                                                        null
-                                                            ? ` · ${formatScore(metricOption.points)}`
-                                                            : ''}
-                                                    </button>
-                                                ),
-                                            )}
-                                        </div>
-
                                         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
                                             <div className="rounded-[1.75rem] bg-slate-50 p-6 ring-1 ring-slate-200">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div>
                                                         <div className="text-xs tracking-[0.24em] text-blue-700 uppercase">
-                                                            Активный критерий
+                                                            Архив критериев
                                                         </div>
                                                         <h3 className="mt-2 text-2xl font-semibold text-slate-950">
-                                                            {highlightedMetric?.key ??
-                                                                'Метрика'}
+                                                            {methodology?.title ??
+                                                                'Публикационная активность'}
                                                         </h3>
                                                     </div>
 
-                                                    {highlightedMetric &&
-                                                    highlightedMetric.points !==
-                                                        null ? (
-                                                        <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 ring-1 ring-slate-200">
-                                                            {formatScore(
-                                                                highlightedMetric.points,
-                                                            )}{' '}
-                                                            балла
-                                                        </div>
-                                                    ) : null}
+                                                    <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 ring-1 ring-slate-200">
+                                                        {formatScore(
+                                                            totalMethodologyPoints,
+                                                        )}{' '}
+                                                        балла
+                                                    </div>
                                                 </div>
 
                                                 <p className="mt-4 text-base leading-7 text-slate-600">
-                                                    {highlightedMetric?.title ??
-                                                        'Метрика не выбрана. Выберите любой критерий выше, чтобы увидеть пояснение и значение в таблице.'}
+                                                    Методология показывает,
+                                                    какие параметры учитывались
+                                                    при ранжировании:
+                                                    публикационная активность,
+                                                    вес критериев и общая
+                                                    структура итогового балла.
                                                 </p>
-
-                                                {methodology?.intro.length ? (
-                                                    <div className="mt-6 space-y-3 rounded-[1.4rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                                                        {methodology.intro
-                                                            .slice(0, 2)
-                                                            .map((line) => (
-                                                                <p key={line}>
-                                                                    {line}
-                                                                </p>
-                                                            ))}
-                                                    </div>
-                                                ) : null}
                                             </div>
 
                                             <div className="space-y-4">
                                                 <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50 p-5">
                                                     <div className="flex items-center gap-2 text-sm text-slate-500">
                                                         <Waypoints className="h-4 w-4 text-blue-700" />
-                                                        Метрик в выпуске
+                                                        Критериев в выпуске
                                                     </div>
                                                     <div className="mt-2 text-3xl font-semibold text-slate-950">
-                                                        {metricOptions.length}
+                                                        {criteria.length}
                                                     </div>
                                                 </div>
 
                                                 <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50 p-5">
                                                     <div className="flex items-center gap-2 text-sm text-slate-500">
-                                                        <Sparkles className="h-4 w-4 text-blue-700" />
-                                                        Текущий фокус
+                                                        <Trophy className="h-4 w-4 text-blue-700" />
+                                                        Лучший результат
                                                     </div>
                                                     <div className="mt-2 text-lg font-semibold text-slate-950">
-                                                        {highlightedMetric?.label ??
-                                                            'Итоговый балл'}
+                                                        {formatScore(
+                                                            bestVisibleScore,
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ) : methodologyNotes.length > 0 ? (
-                                    <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        {methodologyNotes.map((criterion) => (
-                                            <article
-                                                key={`${criterion.key ?? criterion.title}`}
-                                                className="rounded-[1.5rem] border border-gray-200 bg-slate-50 p-5"
-                                            >
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="text-xs tracking-[0.24em] text-blue-700 uppercase">
-                                                        {criterion.key ??
-                                                            'Критерий'}
-                                                    </div>
-                                                    {criterion.points !==
-                                                    null ? (
-                                                        <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-900 ring-1 ring-slate-200">
-                                                            {formatScore(
-                                                                criterion.points,
-                                                            )}
-                                                        </div>
-                                                    ) : null}
-                                                </div>
 
-                                                <p className="mt-4 text-sm leading-6 text-slate-600">
-                                                    {criterion.title}
-                                                </p>
-                                            </article>
-                                        ))}
+                                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                            {criteria.map((criterion) => (
+                                                <article
+                                                    key={`${criterion.number ?? criterion.title}`}
+                                                    className="rounded-[1.5rem] border border-gray-200 bg-slate-50 p-5"
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="text-xs tracking-[0.24em] text-blue-700 uppercase">
+                                                            {criterion.number
+                                                                ? `Критерий ${criterion.number}`
+                                                                : 'Критерий'}
+                                                        </div>
+                                                        {criterion.points !==
+                                                        null ? (
+                                                            <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-900 ring-1 ring-slate-200">
+                                                                {formatScore(
+                                                                    criterion.points,
+                                                                )}
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+
+                                                    <p className="mt-4 text-sm leading-6 text-slate-600">
+                                                        {criterion.title}
+                                                    </p>
+                                                </article>
+                                            ))}
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="mt-8 rounded-[1.6rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-slate-500">
                                         Для выбранного года методология не
                                         найдена. Ниже все равно доступна полная
-                                        таблица рейтинга.
+                                        таблица публикационного рейтинга.
                                     </div>
                                 )}
                             </div>
                         </section>
-
                         <section className="mt-10">
                             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                                 <div>
@@ -1107,101 +955,150 @@ export default function WebsiteRankingPage({
 
                                 <div className="max-w-2xl text-sm leading-6 text-slate-500">
                                     Карточки пересчитываются после смены года,
-                                    категории и поискового запроса. Это
-                                    поведение теперь совпадает с интерактивной
-                                    логикой `v2`.
+                                    категории и поискового запроса. Так экран
+                                    сразу показывает лидеров именно в том срезе,
+                                    который выбран сейчас.
                                 </div>
                             </div>
 
                             <div className="grid gap-5 xl:grid-cols-3">
                                 {leaders.length > 0 ? (
-                                    leaders.map((row, index) => (
-                                        <article
-                                            key={row.id}
-                                            className="overflow-hidden rounded-[1.8rem] text-white shadow-xl shadow-blue-950/10 transition hover:-translate-y-1"
-                                            style={{
-                                                backgroundImage:
-                                                    activeCategory?.meta
-                                                        .surface ??
-                                                    'linear-gradient(135deg, #1e293b 0%, #334155 55%, #0f172a 100%)',
-                                            }}
-                                        >
-                                            <div className="p-6">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div>
-                                                        <div className="text-xs tracking-[0.24em] text-blue-100/80 uppercase">
-                                                            {index === 0
-                                                                ? 'Лучший по текущим фильтрам'
-                                                                : `Позиция #${row.place}`}
+                                    leaders.map((row, index) => {
+                                        const imageSrc = getUniversityImage(
+                                            row.universityId,
+                                        );
+                                        const profileHref =
+                                            getUniversityProfileHref(
+                                                row.universityId,
+                                            );
+                                        const scoreWidth = bestVisibleScore
+                                            ? Math.max(
+                                                  12,
+                                                  Math.round(
+                                                      ((row.total ?? 0) /
+                                                          bestVisibleScore) *
+                                                          100,
+                                                  ),
+                                              )
+                                            : 0;
+
+                                        return (
+                                            <article
+                                                key={row.id}
+                                                className="group overflow-hidden rounded-[2rem] bg-[#071327] text-white shadow-xl shadow-blue-950/10 transition hover:-translate-y-1"
+                                            >
+                                                <div className="relative h-64 overflow-hidden">
+                                                    <div
+                                                        className={`absolute inset-0 bg-gradient-to-br ${featuredThemes[index % featuredThemes.length]}`}
+                                                    />
+                                                    <div className="absolute inset-0 bg-slate-950/45" />
+                                                    {imageSrc ? (
+                                                        <img
+                                                            src={imageSrc}
+                                                            alt={
+                                                                row.universityName
+                                                            }
+                                                            className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                                                            onError={(
+                                                                event,
+                                                            ) => {
+                                                                event.currentTarget.style.display =
+                                                                    'none';
+                                                            }}
+                                                        />
+                                                    ) : null}
+
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#050b16] via-[#050b16]/25 to-transparent" />
+
+                                                    <div className="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white uppercase backdrop-blur">
+                                                        <Trophy className="h-4 w-4 text-amber-300" />
+                                                        {index === 0
+                                                            ? 'Лидер категории'
+                                                            : `Позиция ${row.place}`}
+                                                    </div>
+
+                                                    <div className="absolute top-5 right-5 rounded-2xl bg-white/12 px-4 py-3 text-right backdrop-blur">
+                                                        <div className="text-xs tracking-[0.2em] text-blue-100/75 uppercase">
+                                                            Место
                                                         </div>
-                                                        <h3 className="mt-3 text-xl leading-snug font-semibold">
+                                                        <div className="mt-1 text-3xl font-semibold">
+                                                            #{row.place}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="absolute right-5 bottom-5 left-5">
+                                                        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-blue-100/85 backdrop-blur">
+                                                            <ActiveCategoryIcon className="h-4 w-4" />
+                                                            {activeCategory?.label ??
+                                                                'Категория'}
+                                                        </div>
+
+                                                        <h3 className="mt-4 max-w-[22rem] text-2xl leading-snug font-semibold">
                                                             {row.universityName}
                                                         </h3>
-                                                    </div>
 
-                                                    <div className="rounded-full bg-white/10 px-4 py-2 text-lg font-semibold">
-                                                        #{row.place}
+                                                        {row.city ? (
+                                                            <div className="mt-3 inline-flex items-center gap-2 text-sm text-blue-100/80">
+                                                                <MapPin className="h-4 w-4" />
+                                                                {row.city}
+                                                            </div>
+                                                        ) : null}
                                                     </div>
                                                 </div>
 
-                                                <div className="mt-6 rounded-[1.3rem] border border-white/10 bg-white/10 p-4">
-                                                    <div className="text-xs tracking-[0.2em] text-blue-100/80 uppercase">
-                                                        Сайт
-                                                    </div>
-                                                    {row.websiteUrl ? (
-                                                        <a
-                                                            href={
-                                                                row.websiteUrl
-                                                            }
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-white underline decoration-white/30 underline-offset-4 transition hover:text-emerald-200"
-                                                        >
-                                                            {getDomainLabel(
-                                                                row.websiteUrl,
-                                                            )}
-                                                            <ArrowUpRight className="h-4 w-4" />
-                                                        </a>
-                                                    ) : (
-                                                        <div className="mt-2 text-sm text-blue-100/80">
-                                                            Ссылка не указана
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                <div className="space-y-5 p-6">
+                                                    <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <div>
+                                                                <div className="text-xs tracking-[0.2em] text-blue-100/70 uppercase">
+                                                                    Итоговый
+                                                                    балл
+                                                                </div>
+                                                                <div className="mt-2 text-4xl font-semibold">
+                                                                    {formatScore(
+                                                                        row.total,
+                                                                    )}
+                                                                </div>
+                                                            </div>
 
-                                                <div className="mt-5 grid gap-3 md:grid-cols-2">
-                                                    <div className="rounded-[1.3rem] bg-white/10 p-4">
-                                                        <div className="text-xs tracking-[0.2em] text-blue-100/80 uppercase">
-                                                            Итоговый балл
+                                                            <div className="rounded-2xl bg-white/10 p-3">
+                                                                <FileText className="h-5 w-5 text-blue-100" />
+                                                            </div>
                                                         </div>
-                                                        <div className="mt-2 text-3xl font-semibold">
-                                                            {formatScore(
-                                                                row.totalScore,
-                                                            )}
+
+                                                        <div className="mt-4 h-2.5 rounded-full bg-white/10">
+                                                            <div
+                                                                className={`h-full rounded-full bg-gradient-to-r ${featuredThemes[index % featuredThemes.length]}`}
+                                                                style={{
+                                                                    width: `${scoreWidth}%`,
+                                                                }}
+                                                            />
                                                         </div>
                                                     </div>
 
-                                                    <div className="rounded-[1.3rem] bg-white/10 p-4">
-                                                        <div className="text-xs tracking-[0.2em] text-blue-100/80 uppercase">
-                                                            {highlightedMetric?.key ??
-                                                                'Метрика'}
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <div className="text-sm leading-6 text-blue-100/70">
+                                                            {profileHref
+                                                                ? 'Карточка ведет на профиль вуза с полной институциональной информацией.'
+                                                                : 'Для этого вуза профиль пока не привязан, но позиция сохранена в архиве.'}
                                                         </div>
-                                                        <div className="mt-2 text-3xl font-semibold">
-                                                            {highlightedMetric
-                                                                ? formatScore(
-                                                                      row
-                                                                          .metrics[
-                                                                          highlightedMetric
-                                                                              .key
-                                                                      ] ?? null,
-                                                                  )
-                                                                : 'н/д'}
-                                                        </div>
+
+                                                        {profileHref ? (
+                                                            <Link
+                                                                href={
+                                                                    profileHref
+                                                                }
+                                                                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+                                                            >
+                                                                Профиль
+                                                                <ArrowUpRight className="h-4 w-4" />
+                                                            </Link>
+                                                        ) : null}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </article>
-                                    ))
+                                            </article>
+                                        );
+                                    })
                                 ) : (
                                     <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-slate-500 xl:col-span-3">
                                         По текущим фильтрам ничего не найдено.
@@ -1211,7 +1108,7 @@ export default function WebsiteRankingPage({
                         </section>
 
                         <section
-                            id="website-ranking-table"
+                            id="publication-table"
                             className="mt-10 overflow-hidden rounded-[2rem] border border-gray-200/60 bg-white shadow-xl shadow-gray-200/40"
                         >
                             <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-7 py-6 text-white">
@@ -1222,14 +1119,14 @@ export default function WebsiteRankingPage({
                                         </div>
                                         <h2 className="mt-2 text-3xl font-semibold">
                                             {activeCategory?.label ??
-                                                'Рейтинг сайтов'}{' '}
+                                                'Рейтинг публикаций'}{' '}
                                             · {selectedYear}
                                         </h2>
                                     </div>
 
                                     <div className="max-w-2xl text-sm leading-6 text-blue-100/70">
-                                        Таблица следует выбранной категории и
-                                        метрике. Если нужен другой профиль,
+                                        Таблица следует активной категории и
+                                        поиску. Если нужен другой профиль,
                                         переключите карточку выше и список сразу
                                         перестроится без отдельного экрана.
                                     </div>
@@ -1248,20 +1145,19 @@ export default function WebsiteRankingPage({
 
                                 <div className="rounded-[1.25rem] bg-white p-4">
                                     <div className="text-sm text-slate-500">
-                                        Ссылок на сайты
+                                        Категорий в году
                                     </div>
                                     <div className="mt-2 text-3xl font-semibold text-slate-950">
-                                        {websitesCount}
+                                        {selectedRating?.categoryCount ?? 0}
                                     </div>
                                 </div>
 
                                 <div className="rounded-[1.25rem] bg-white p-4">
                                     <div className="text-sm text-slate-500">
-                                        Фокусная метрика
+                                        Критериев
                                     </div>
-                                    <div className="mt-2 text-lg font-semibold text-slate-950">
-                                        {highlightedMetric?.key ??
-                                            'Итоговый балл'}
+                                    <div className="mt-2 text-3xl font-semibold text-slate-950">
+                                        {criteria.length}
                                     </div>
                                 </div>
 
@@ -1281,90 +1177,88 @@ export default function WebsiteRankingPage({
                                         <tr className="bg-white text-left text-xs font-semibold tracking-[0.18em] text-slate-400 uppercase">
                                             <th className="px-6 py-4">Место</th>
                                             <th className="px-6 py-4">Вуз</th>
-                                            <th className="px-6 py-4">Сайт</th>
-                                            {highlightedMetric ? (
+                                            {hasCities ? (
                                                 <th className="px-6 py-4">
-                                                    {highlightedMetric.key}
-                                                    {highlightedMetric.points !==
-                                                    null
-                                                        ? ` · ${formatScore(highlightedMetric.points)}`
-                                                        : ''}
+                                                    Город
                                                 </th>
                                             ) : null}
-                                            <th className="px-6 py-4">Итог</th>
+                                            <th className="px-6 py-4">
+                                                Итоговый балл
+                                            </th>
+                                            <th className="px-6 py-4">
+                                                Профиль
+                                            </th>
                                         </tr>
                                     </thead>
 
                                     <tbody>
                                         {visibleRows.length > 0 ? (
-                                            visibleRows.map((row) => (
-                                                <tr
-                                                    key={row.id}
-                                                    className="border-t border-gray-100 transition-colors hover:bg-blue-50/40"
-                                                >
-                                                    <td className="px-6 py-5 align-top">
-                                                        <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">
-                                                            #{row.place}
-                                                        </span>
-                                                    </td>
+                                            visibleRows.map((row) => {
+                                                const profileHref =
+                                                    getUniversityProfileHref(
+                                                        row.universityId,
+                                                    );
 
-                                                    <td className="px-6 py-5 align-top">
-                                                        <div className="font-semibold text-slate-950">
-                                                            {row.universityName}
-                                                        </div>
-                                                        <div className="mt-2 text-sm text-slate-500">
-                                                            {row.categoryLabel}
-                                                        </div>
-                                                    </td>
-
-                                                    <td className="px-6 py-5 align-top">
-                                                        {row.websiteUrl ? (
-                                                            <a
-                                                                href={
-                                                                    row.websiteUrl
-                                                                }
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-900"
-                                                            >
-                                                                {getDomainLabel(
-                                                                    row.websiteUrl,
-                                                                )}
-                                                                <ExternalLink className="h-4 w-4" />
-                                                            </a>
-                                                        ) : (
-                                                            <span className="text-sm text-slate-400">
-                                                                Сайт не указан
+                                                return (
+                                                    <tr
+                                                        key={row.id}
+                                                        className="border-t border-gray-100 transition-colors hover:bg-blue-50/40"
+                                                    >
+                                                        <td className="px-6 py-5 align-top">
+                                                            <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">
+                                                                #{row.place}
                                                             </span>
-                                                        )}
-                                                    </td>
+                                                        </td>
 
-                                                    {highlightedMetric ? (
-                                                        <td className="px-6 py-5 align-top font-medium text-slate-950">
+                                                        <td className="px-6 py-5 align-top">
+                                                            <div className="font-semibold text-slate-950">
+                                                                {
+                                                                    row.universityName
+                                                                }
+                                                            </div>
+                                                            <div className="mt-2 text-sm text-slate-500">
+                                                                {activeCategory?.label ??
+                                                                    'Архивный выпуск'}
+                                                            </div>
+                                                        </td>
+
+                                                        {hasCities ? (
+                                                            <td className="px-6 py-5 align-top text-sm text-slate-600">
+                                                                {row.city ??
+                                                                    'Не указан'}
+                                                            </td>
+                                                        ) : null}
+
+                                                        <td className="px-6 py-5 align-top font-semibold text-slate-950">
                                                             {formatScore(
-                                                                row.metrics[
-                                                                    highlightedMetric
-                                                                        .key
-                                                                ] ?? null,
+                                                                row.total,
                                                             )}
                                                         </td>
-                                                    ) : null}
 
-                                                    <td className="px-6 py-5 align-top font-semibold text-slate-950">
-                                                        {formatScore(
-                                                            row.totalScore,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))
+                                                        <td className="px-6 py-5 align-top">
+                                                            {profileHref ? (
+                                                                <Link
+                                                                    href={
+                                                                        profileHref
+                                                                    }
+                                                                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-900"
+                                                                >
+                                                                    Профиль вуза
+                                                                    <ArrowUpRight className="h-4 w-4" />
+                                                                </Link>
+                                                            ) : (
+                                                                <span className="text-sm text-slate-400">
+                                                                    Не привязан
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan={
-                                                        highlightedMetric
-                                                            ? 5
-                                                            : 4
-                                                    }
+                                                    colSpan={hasCities ? 5 : 4}
                                                     className="px-6 py-14 text-center text-slate-500"
                                                 >
                                                     По текущим параметрам нет
@@ -1383,43 +1277,47 @@ export default function WebsiteRankingPage({
                                     Что важно читать
                                 </div>
                                 <h2 className="mt-2 text-3xl font-semibold text-slate-950">
-                                    Не только итог, но и цифровую открытость
+                                    Не только итог, но и структуру
+                                    публикационной активности
                                 </h2>
 
                                 <div className="mt-8 grid gap-6 md:grid-cols-3">
                                     <div className="border-l-2 border-blue-100 pl-5">
-                                        <div className="text-lg font-semibold text-slate-950">
-                                            Контент сайта
+                                        <div className="inline-flex items-center gap-2 text-lg font-semibold text-slate-950">
+                                            <FileText className="h-5 w-5 text-blue-700" />
+                                            Архив по годам
                                         </div>
                                         <p className="mt-3 text-sm leading-6 text-slate-600">
-                                            Рейтинг оценивает не только внешний
-                                            вид, но и полноту полезной
-                                            информации, документов и сервисных
-                                            разделов.
+                                            Переключение между годами помогает
+                                            увидеть, как менялись выпуски,
+                                            количество критериев и состав
+                                            университетов в рейтинге.
                                         </p>
                                     </div>
 
                                     <div className="border-l-2 border-emerald-100 pl-5">
-                                        <div className="text-lg font-semibold text-slate-950">
-                                            Удобство для пользователя
+                                        <div className="inline-flex items-center gap-2 text-lg font-semibold text-slate-950">
+                                            <Building2 className="h-5 w-5 text-emerald-600" />
+                                            Категориальный срез
                                         </div>
                                         <p className="mt-3 text-sm leading-6 text-slate-600">
-                                            Важны понятная навигация,
-                                            доступность разделов, язык, контакты
-                                            и то, насколько быстро пользователь
-                                            находит нужную информацию.
+                                            Если выпуск разбит по профилям,
+                                            стоит смотреть не только абсолютного
+                                            лидера года, но и первого в каждой
+                                            категории.
                                         </p>
                                     </div>
 
                                     <div className="border-l-2 border-orange-100 pl-5">
-                                        <div className="text-lg font-semibold text-slate-950">
-                                            Сравнение по годам
+                                        <div className="inline-flex items-center gap-2 text-lg font-semibold text-slate-950">
+                                            <BookOpenText className="h-5 w-5 text-orange-500" />
+                                            Вес критериев
                                         </div>
                                         <p className="mt-3 text-sm leading-6 text-slate-600">
-                                            Переключение между годами
-                                            показывает, как менялись формат
-                                            публикации, критерии и сами группы
-                                            университетов в архиве.
+                                            Методология помогает понять, как
+                                            сформирован итоговый балл и какие
+                                            показатели влияли на публикационную
+                                            позицию вуза.
                                         </p>
                                     </div>
                                 </div>
@@ -1433,10 +1331,10 @@ export default function WebsiteRankingPage({
                                     {selectedYear}
                                 </h2>
                                 <p className="mt-4 text-sm leading-6 text-blue-100">
-                                    Выпуск переведен в более современную логику
-                                    навигации: активный профиль, переключаемая
-                                    метрика, блок лидеров и компактная таблица
-                                    без лишних переходов.
+                                    Выпуск собран в одной странице: активная
+                                    категория, лидеры, критерии методологии и
+                                    полная таблица без лишних переходов по
+                                    архиву.
                                 </p>
 
                                 <div className="mt-8 space-y-4 border-t border-white/10 pt-6">
@@ -1450,11 +1348,10 @@ export default function WebsiteRankingPage({
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-blue-100">
-                                            Формат
+                                            Диапазон
                                         </span>
                                         <span className="font-medium">
-                                            {selectedYearMeta?.modeLabel ??
-                                                'Архив'}
+                                            {archiveRange}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
@@ -1471,7 +1368,7 @@ export default function WebsiteRankingPage({
                                         <span className="text-blue-100">
                                             Активная категория
                                         </span>
-                                        <span className="font-medium">
+                                        <span className="text-right font-medium">
                                             {activeCategory?.label ?? 'Архив'}
                                         </span>
                                     </div>

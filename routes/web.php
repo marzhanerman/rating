@@ -7,6 +7,7 @@ use App\Models\University;
 use App\Http\Controllers\InstitutionalImportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InstitutionalRankingController;
+use App\Http\Controllers\PublicationRankingController;
 use App\Http\Controllers\ProgramRankingController;
 use App\Http\Controllers\WebsiteRankingController;
 
@@ -39,6 +40,7 @@ Route::get('/ranking-v2', [InstitutionalRankingController::class, 'variantTwo'])
 Route::get('/ranking-v2/university/{university}', [InstitutionalRankingController::class, 'showVariantTwo']);
 Route::get('/program-ranking', [ProgramRankingController::class, 'index']);
 Route::get('/program-ranking-v2', [ProgramRankingController::class, 'variantTwo']);
+Route::get('/publication-ranking', [PublicationRankingController::class, 'index']);
 Route::get('/website-ranking', [WebsiteRankingController::class, 'index']);
 Route::get('/methodology', function () {
     return Inertia::render('methodology');
